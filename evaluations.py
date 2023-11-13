@@ -64,7 +64,11 @@ def create_evaluations():
         with st.container():
             with st.form(key='evaluation_details_form'):
                 # Input fields with default values from session_state
-                serial_no = st.text_input('Serial No', key='serial_no')
+                # Input fields
+                # Automatically generate the next serial number
+                serial_no = len(st.session_state.evaluation_details) + 1
+                # Display the serial number to the user
+                st.write(f"Serial No: {serial_no}")
                 student_name = st.text_input('Name', key='student_name')
                 roll_number = st.text_input('Roll Number', key='roll_number')
                 score = st.text_input('Score', key='score')
@@ -86,4 +90,6 @@ def create_evaluations():
     # Display the table of exam details
     if st.session_state.evaluation_details:
         st.write('Evaluation Details:')
-        st.table(st.session_state.evaluation_details)
+        df = pd.DataFrame(st.session_state.evaluation_details)
+        # Convert DataFrame to HTML and use st.markdown to display it, without the index
+        st.markdown(df.to_html(index=False), unsafe_allow_html=True)

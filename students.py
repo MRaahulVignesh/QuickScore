@@ -93,4 +93,6 @@ def create_students_page():
     # Display the table of exam details
     if st.session_state.student_details:
         st.write('Student Details:')
-        st.table(st.session_state.student_details)
+        df = pd.DataFrame(st.session_state.student_details)
+        # Convert DataFrame to HTML and use st.markdown to display it, without the index
+        st.markdown(df.to_html(index=False), unsafe_allow_html=True)

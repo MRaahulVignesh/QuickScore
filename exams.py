@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime
 import redirect as rd
-
+import pandas as pd
 
 def create_exams_page():
     with st.sidebar:
@@ -31,7 +31,7 @@ def create_exams_page():
     #         st.session_state['uploaded_files'].append(file_info)
     #         st.write("File Uploaded: ", uploaded_file.name)
 
-
+  
 
     # Button to show the overlay
     if st.button('Upload Exam Details'):
@@ -42,6 +42,10 @@ def create_exams_page():
         with st.container():
             with st.form(key='exam_details_form'):
                 # Input fields
+                # Automatically generate the next serial number
+                serial_no = len(st.session_state.exam_details) + 1
+                # Display the serial number to the user
+                st.write(f"Serial No: {serial_no}")
                 name = st.text_input('Name', key='name')
                 date = st.date_input('Date', value=datetime.today(), key='date')
                 total_score = st.text_input('Total Score', key='total_score')
@@ -56,6 +60,7 @@ def create_exams_page():
                     st.session_state.show_overlay = False
                     # Store the submitted values in the session state
                     st.session_state.exam_details.append({
+                        'Serial No': serial_no,
                         'Name': name,
                         'Date': date,
                         'Total Score': total_score,
@@ -66,5 +71,8 @@ def create_exams_page():
     # Display the table of exam details
     if st.session_state.exam_details:
         st.write('Exam Details:')
-        st.table(st.session_state.exam_details)
+        df = pd.DataFrame(st.session_state.exam_details)
+        # Convert DataFrame to HTML and use st.markdown to display it, without the index
+        st.markdown(df.to_html(index=False), unsafe_allow_html=True)
+        
 
