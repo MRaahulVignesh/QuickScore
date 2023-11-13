@@ -1,20 +1,25 @@
 import streamlit as st
-import pandas as pd
-
+import redirect as rd
+from students import create_students_page
+from exams import create_exams_page
+from evaluations import create_evaluations
 # Set the page configuration for the Streamlit app
 st.set_page_config(page_title="GradeMe", layout="wide")
 
+# Initialize session state variables outside the function
+if 'uploaded_files' not in st.session_state:
+    st.session_state.uploaded_files = []
+
+if 'exam_details' not in st.session_state:
+    st.session_state.exam_details = []
+if 'show_overlay' not in st.session_state:
+    st.session_state.show_overlay = False
 # Initialize session state for page navigation
 if 'page' not in st.session_state:
     st.session_state['page'] = 'home'
+# if 'uploaded_files' not in st.session_state:
+#     st.session_state['uploaded_files'] = []
 
-# Function to navigate to the dashboard
-def go_to_dashboard():
-    st.session_state['page'] = 'dashboard'
-
-# Function to navigate to the upload page
-def go_to_upload():
-    st.session_state['page'] = 'upload'
 
 # Function to create a custom button with Streamlit
 def custom_button(text, on_click=None):
@@ -39,7 +44,7 @@ def create_homepage():
     st.title("Grade and Respond")
     st.write("Efficiently grade and provide feedback on student answer papers")
     
-    if custom_button("Get Started", on_click=go_to_upload):
+    if custom_button("Get Started", on_click=rd.go_to_exams):
         pass  # The button click will change the session state to 'upload'
 
     st.write("---")
@@ -49,72 +54,33 @@ def create_homepage():
 
     st.write("---")
 
-    st.subheader("Website Grading")
-    st.write("See how our website grades answer papers")
-
-    if custom_button("Learn More"):
-        pass  # Placeholder for 'Learn More' button action
-
-    st.write("---")
-
+    # FAQ section
     st.subheader("FAQ")
     st.write("Common questions")
-
-    # ... (rest of your FAQ expanders)
-
-def create_dashboard():
-    # st.sidebar.header("Grade Me")
-    # st.sidebar.button("New Scan", on_click=go_to_upload)
-    # st.sidebar.button("My Scans", on_click=go_to_dashboard)
-    # st.sidebar.button("Shared With Me")
-    # st.sidebar.button("Recent Scans")
-    # st.sidebar.button("Text Compare")
-    # Sidebar
-    with st.sidebar:
-        st.header("Grade Me")
-        if st.button("New Scan"):
-            go_to_upload()
-        # Correctly assigning the on_click parameter
-        if st.button("My Scans"):
-            go_to_dashboard()
-    st.title("My Scans")
-
-    # Placeholder data for the table
-    data = {
-        "Type": ["pdf", "pdf"],
-        "Name": ["Yuvarej Selvam - Mid 1 Answer paper.pdf", "Sample-report.pdf"],
-        "Date": ["Nov 11, 2023", "Nov 11, 2023"],
-        "AI Content Detected": ["No", "Yes"],
-        "Plagiarism Score": ["0%", "43%"],
-    }
-    df = pd.DataFrame(data)
     
-    st.table(df)
+    # You can use st.expander to create dropdowns for each FAQ
+    faq1 = st.expander("How does the website grade the answer paper?")
+    faq1.write("The website uses an algorithm to analyze the content of the answer paper and assign a grade based on predefined criteria.")
+    
+    faq2 = st.expander("What factors are considered when grading the paper?")
+    faq2.write("The website considers factors such as accuracy, clarity, organization, and use of supporting evidence when grading the paper.")
+    
+    faq3 = st.expander("Can the website provide feedback on specific areas for improvement?")
+    faq3.write("Yes, the website provides detailed feedback on areas where the student can improve their answer, including suggestions for further research or examples to support their arguments.")
+    
+    faq4 = st.expander("Is the grading process automated or manual?")
+    faq4.write("The grading process is automated, but it is designed to mimic the evaluation process of a human grader as closely as possible.")
 
-def create_upload_page():
 
-        # Sidebar
-    with st.sidebar:
-        st.header("Grade Me")
-        if st.button("New Scan"):
-            go_to_upload()
-        # Correctly assigning the on_click parameter
-        if st.button("My Scans"):
-            go_to_dashboard()
 
-            
-    st.title("Upload")
-    st.write("Upload the question paper here.")
-    uploaded_file = st.file_uploader("", type=['pdf', 'docx', 'txt'])
-    if uploaded_file is not None:
-        # Handle the uploaded file
-        st.write("File Uploaded: ", uploaded_file.name)
+
 
 # Main app logic
 if st.session_state['page'] == 'home':
     create_homepage()
-elif st.session_state['page'] == 'dashboard':
-    create_dashboard()
-elif st.session_state['page'] == 'upload':
-    create_upload_page()
-
+elif st.session_state['page'] == 'students':
+    create_students_page()
+elif st.session_state['page'] == 'exams':
+    create_exams_page()
+elif st.session_state['page'] == 'evaluations':
+    create_evaluations()
