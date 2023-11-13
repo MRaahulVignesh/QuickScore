@@ -1,11 +1,10 @@
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy_utils import database_exists, create_database
 
-from services.authorization_service.src.config.variables import config
-from services.common.errors.error_functions import DatabaseError, InternalServerError
+from backend.config.config import config
+from backend.utils.errors import InternalServerError, DatabaseError
 
 Base = declarative_base()
 
@@ -38,6 +37,7 @@ class PostgresConn:
         try:
             if not database_exists(self.__db_url):
                 create_database(self.__db_url)
+                print("Database Created Successfully!!")
         except Exception as error:
             raise InternalServerError("There has been a problem in checking the connection for the db.") from error
 

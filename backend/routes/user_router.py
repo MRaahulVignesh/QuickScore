@@ -1,40 +1,92 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from core import create_user, get_user_by_id, get_user_by_email, update_user, delete_user
-from database import SessionLocal
-from models import User as UserModel
+
+from fastapi import APIRouter, status, Query, Form
+from fastapi.responses import JSONResponse, Response
+
+from backend.schemas.user_schema import CreateUser, UpdateUser
+from backend.core.user_core import UserCore
+from backend.utils.errors import NotFoundError
+
 
 user_router = APIRouter()
 
 # Create a new user
-@user_router.post("/users/", response_model=UserModel)
-def create_new_user(user: UserModel):
-    db_user = get_user_by_email(db, user.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="User with this email already exists")
-    return create_user(db, user.name, user.email, user.password)
+@user_router.post("/")
+def create_new_user(user: CreateUser):
+    user_core = UserCore()
+    try:
+        user = user_core.create_user(name=user.name, email=user.email, password=user.password)
+        response = JSONResponse(content=user, status_code=status.HTTP_201_CREATED)
+    except NotFoundError as error:
+        print(error)
+        response = JSONResponse(content='{"message": "User"}', status_code=status.HTTP_404_NOT_FOUND_ERROR)   
+    except Exception as error:
+        print(error)
+        response = JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return response
+    
 
 # Retrieve a user by ID
-@user_router.get("/users/{user_id}", response_model=UserModel)
-def get_user(user_id: int, db: Session = Depends(get_db)):
-    user = get_user_by_id(db, user_id)
-    if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return user
+@user_router.get("/{user_id}")
+def get_user(user_id: int):
+    user_core = UserCore()
+    try:
+        user = user_core.get_user_by_id(user_id)
+        response = JSONResponse(content=user, status_code=status.HTTP_200_OK)
+    except NotFoundError as error:
+        print(error)
+        response = JSONResponse(content='{"message": "User doesnot exist!!"}', status_code=status.HTTP_404_NOT_FOUND_ERROR) 
+    except Exception as error:
+        print(error)
+        response = JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return response
+
+@user_router.get("/")
+def get_user_by_email_endpoint(email: str = Query(..., description="User email")):
+    user_core = UserCore()
+    try:
+        user = user_core.get_user_by_email(email)
+        response = JSONResponse(content=user, status_code=status.HTTP_200_OK)
+    except NotFoundError as error:
+        print(error)
+        response = JSONResponse(content='{"message": "User doesnot exist!!"}', status_code=status.HTTP_404_NOT_FOUND_ERROR) 
+    except Exception as error:
+        print(error)
+        response = JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return response
 
 # Update user information
-@user_router.put("/users/{user_id}", response_model=UserModel)
-def update_existing_user(user_id: int, user: UserModel, db: Session = Depends(get_db)):
-    db_user = get_user_by_id(db, user_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return update_user(db, user_id, user.name, user.email, user.password)
+@user_router.put("/{user_id}")
+def update_existing_user(user_id: int, user: UpdateUser):
+    user_core = UserCore()
+    try:
+        user = user_core.update_user(user_id=user_id, name=user.name, email=user.email, password=user.password)
+        if user is None:
+            response = JSONResponse(content='{"message": "User not found"}', status_code=status.HTTP_404_NOT_FOUND)
+        else:        
+            response = JSONResponse(content=user, status_code=status.HTTP_200_OK)
+    except Exception as error:
+        print(error)
+        response = JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return response
 
 # Delete a user
-@user_router.delete("/users/{user_id}", response_model=UserModel)
-def delete_existing_user(user_id: int, db: Session = Depends(get_db)):
-    db_user = get_user_by_id(db, user_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    delete_user(db, user_id)
-    return db_user
+@user_router.delete("/{user_id}")
+def delete_existing_user(user_id: int):
+    user_core = UserCore()
+    try:
+        user_core.delete_user(user_id)
+    except Exception as error:
+        print(error)
+        response = JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return response
+
+@user_router.post("/login")
+def login(email: str = Form(...), password: str = Form(...)):
+    user_core = UserCore()
+    try:
+        content = user_core.authenticate_user(email, password)
+        response = JSONResponse(content=content, status_code=status.HTTP_200_OK)
+    except Exception as error:
+        print(error)
+        response = JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    return response

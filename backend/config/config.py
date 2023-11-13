@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     DB_PASSWORD: Optional[str] = None
     DB_DATABASE: Optional[str] = None
 
+    SECRET_KEY: Optional[str] = None
+
     model_config = SettingsConfigDict(env_file="./backend/.env")
 
 

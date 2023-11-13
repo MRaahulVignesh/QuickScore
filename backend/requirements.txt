@@ -1,3 +1,8 @@
 fastapi
 uvicorn
 SQLAlchemy
+sqlalchemy_utils
+pydantic_settings
+requests
+psycopg2-binary
+jwt
