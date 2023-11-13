@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
 from backend.utils.db_conn import postgres_conn
 from backend.routes.user_router import user_router
+from backend.routes.exam_router import exam_router
 
 def authorization_service_startup():
     print("Starting up -- Authorization server!!")
@@ -24,3 +25,4 @@ server = FastAPI(
 )
 
 server.include_router(user_router, prefix="/quick-score/users")
+server.include_router(exam_router, prefix="/quick-score/exams")

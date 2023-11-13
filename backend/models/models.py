@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Float, Boolean, Table
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float, Boolean, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
@@ -20,7 +20,7 @@ class ExamModel(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
-    conducted_date = Column(DateTime)
+    conducted_date = Column(Date)
     description = Column(String(255))
     total_marks = Column(Float, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
