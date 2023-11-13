@@ -62,16 +62,19 @@ def create_students_page():
     # The overlay layout
     if st.session_state.show_overlay:
         with st.container():
-            # The form inside the overlay
             with st.form(key='student_details_form'):
-                # Input fields
-                name = st.text_input('Name')
-                date = st.date_input('Date', value=datetime.today())
-                total_score = st.text_input('Total Score')
-                
+                # Automatically generate the next serial number
+                serial_no = len(st.session_state.student_details) + 1
+                # Display the serial number to the user
+                st.write(f"Serial No: {serial_no}")
+                name = st.text_input('Name', key='student_name')
+                email = st.text_input('Email', key='student_email')
+                roll_number = st.text_input('Roll Number', key='student_roll_number')
+                score = st.text_input('Score', key='student_score')
+
                 # File uploader
                 uploaded_files = st.file_uploader("Choose a file", accept_multiple_files=True, key='file_uploader_students')
-                
+
                 # Submit button for the form
                 submitted = st.form_submit_button('Submit')
                 if submitted:
@@ -79,16 +82,13 @@ def create_students_page():
                     st.session_state.show_overlay = False
                     # Store the submitted values in the session state
                     st.session_state.student_details.append({
+                        'Serial No': serial_no,
                         'Name': name,
-                        'Date': date,
-                        'Total Score': total_score,
-                        # Store uploaded file info or handle file processing here
+                        'Email': email,
+                        'Roll Number': roll_number,
+                        'Score': score,
                         'Files': ', '.join(file.name for file in uploaded_files) if uploaded_files else 'No files'
                     })
-                    # Clear the input fields after submission
-                    st.session_state['name'] = ""
-                    st.session_state['date'] = datetime.today()
-                    st.session_state['total_score'] = ""
 
     # Display the table of exam details
     if st.session_state.student_details:
