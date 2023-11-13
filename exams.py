@@ -40,12 +40,14 @@ def create_exams_page():
     # The overlay layout
     if st.session_state.show_overlay:
         with st.container():
-            # The form inside the overlay
             with st.form(key='exam_details_form'):
                 # Input fields
-                name = st.text_input('Name')
-                date = st.date_input('Date', value=datetime.today())
-                total_score = st.text_input('Total Score')
+                name = st.text_input('Name', key='name')
+                date = st.date_input('Date', value=datetime.today(), key='date')
+                total_score = st.text_input('Total Score', key='total_score')
+                
+                # File uploader
+                uploaded_files = st.file_uploader("Choose a file", accept_multiple_files=True, key='file_uploader')
                 
                 # Submit button for the form
                 submitted = st.form_submit_button('Submit')
@@ -56,12 +58,10 @@ def create_exams_page():
                     st.session_state.exam_details.append({
                         'Name': name,
                         'Date': date,
-                        'Total Score': total_score
+                        'Total Score': total_score,
+                        # Store uploaded file info or handle file processing here
+                        'Files': ', '.join(file.name for file in uploaded_files) if uploaded_files else 'No files'
                     })
-                    # Clear the input fields after submission
-                    st.session_state['name'] = ""
-                    st.session_state['date'] = datetime.today()
-                    st.session_state['total_score'] = ""
 
     # Display the table of exam details
     if st.session_state.exam_details:

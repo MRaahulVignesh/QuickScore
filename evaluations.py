@@ -62,28 +62,26 @@ def create_evaluations():
     # The overlay layout
     if st.session_state.show_overlay:
         with st.container():
-            # The form inside the overlay
             with st.form(key='evaluation_details_form'):
-                # Input fields
-                name = st.text_input('Name')
-                date = st.date_input('Date', value=datetime.today())
-                total_score = st.text_input('Total Score')
-                
+                # Input fields with default values from session_state
+                serial_no = st.text_input('Serial No', key='serial_no')
+                student_name = st.text_input('Name', key='student_name')
+                roll_number = st.text_input('Roll Number', key='roll_number')
+                score = st.text_input('Score', key='score')
+
                 # Submit button for the form
                 submitted = st.form_submit_button('Submit')
                 if submitted:
-                    # Hide the overlay
-                    st.session_state.show_overlay = False
                     # Store the submitted values in the session state
                     st.session_state.evaluation_details.append({
-                        'Name': name,
-                        'Date': date,
-                        'Total Score': total_score
+                        'Serial No': serial_no,
+                        'Name': student_name,
+                        'Roll Number': roll_number,
+                        'Score': score
                     })
-                    # Clear the input fields after submission
-                    st.session_state['name'] = ""
-                    st.session_state['date'] = datetime.today()
-                    st.session_state['total_score'] = ""
+                    # Hide the overlay
+                    st.session_state.show_overlay = False
+        
 
     # Display the table of exam details
     if st.session_state.evaluation_details:

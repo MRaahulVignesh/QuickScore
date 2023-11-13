@@ -69,6 +69,9 @@ def create_students_page():
                 date = st.date_input('Date', value=datetime.today())
                 total_score = st.text_input('Total Score')
                 
+                # File uploader
+                uploaded_files = st.file_uploader("Choose a file", accept_multiple_files=True, key='file_uploader_students')
+                
                 # Submit button for the form
                 submitted = st.form_submit_button('Submit')
                 if submitted:
@@ -78,7 +81,9 @@ def create_students_page():
                     st.session_state.student_details.append({
                         'Name': name,
                         'Date': date,
-                        'Total Score': total_score
+                        'Total Score': total_score,
+                        # Store uploaded file info or handle file processing here
+                        'Files': ', '.join(file.name for file in uploaded_files) if uploaded_files else 'No files'
                     })
                     # Clear the input fields after submission
                     st.session_state['name'] = ""
