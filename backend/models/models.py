@@ -42,5 +42,4 @@ class AnswerModel(Base):
     id = Column(Integer, primary_key=True)
     student_id = Column(Integer, ForeignKey('students.id'))
     exam_id = Column(Integer, ForeignKey('exams.id'))
-    evaluation_status = Column(Boolean, default=False)
-    score = Column(Float)
+    score = Column(Float, default=0.0)
