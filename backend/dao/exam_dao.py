@@ -11,9 +11,12 @@ class ExamDao:
         self.db = postgres_conn.get_db()
 
     # Create a new user
-    def create_exam(self, name: str, conducted_date: datetime, description: str, total_marks: float, user_id: int):
+    def create_exam(self, name: str, conducted_date: datetime, description: str, total_marks: float, user_id: int, answer_key):
         try:
-            exam = ExamModel(name=name, conducted_date=conducted_date, description=description, total_marks=total_marks, user_id=user_id)
+            if answer_key is not None:
+                exam = ExamModel(name=name, conducted_date=conducted_date, description=description, total_marks=total_marks, user_id=user_id, answer_key=answery_key)
+            else:
+                exam = ExamModel(name=name, conducted_date=conducted_date, description=description, total_marks=total_marks, user_id=user_id)                
             self.db.add(exam)
             self.db.commit()
             self.db.refresh(exam)

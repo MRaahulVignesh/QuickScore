@@ -32,3 +32,4 @@ class AnswerCore:
     def delete_answer(self, id: int):
         self.answer_dao.delete_answer(id)
         return True
+        

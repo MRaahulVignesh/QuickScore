@@ -12,11 +12,10 @@ def create_answer(answer: CreateAnswer):
     answer_core = AnswerCore()
     try:
         answer = answer_core.create_answer(answer)
-        response = JSONResponse(content=answer, status_code=status.HTTP_200_OK)
+        return JSONResponse(content=answer, status_code=status.HTTP_200_OK)
     except Exception as error:
         print(error)
-        response = JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    return response
+        return JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
 # Retrieve a user by ID

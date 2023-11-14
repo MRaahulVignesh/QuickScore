@@ -5,4 +5,9 @@ sqlalchemy_utils
 pydantic_settings
 requests
 psycopg2-binary
-jwt
+PyJWT
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
+cohere
+pdfplumber

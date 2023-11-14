@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float, Boolean, Table
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Float, Boolean, Table, JSON
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.sql import func
@@ -24,6 +24,7 @@ class ExamModel(Base):
     description = Column(String(255))
     total_marks = Column(Float, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
+    answer_key = Column(JSON, default={})
 
 # Define the Student model
 class StudentModel(Base):
