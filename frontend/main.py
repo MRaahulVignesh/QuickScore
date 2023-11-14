@@ -1,8 +1,8 @@
 import streamlit as st
-import Frontend.redirect as rd
-from Frontend.students import create_students_page
-from Frontend.exams import create_exams_page
-from Frontend.evaluations import create_evaluations
+import redirect as rd
+from students import create_students_page
+from exams import create_exams_page
+from evaluations import create_evaluations
 # Set the page configuration for the Streamlit app
 st.set_page_config(page_title="GradeMe", layout="wide")
 

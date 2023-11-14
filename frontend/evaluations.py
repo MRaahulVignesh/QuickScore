@@ -21,31 +21,6 @@ def create_evaluations():
             rd.go_to_exams()
 
     st.title("Evaluations")
-    # Sample list of student names for the dropdown
-    # student_names = [f"Student {i+1}" for i in range(10)]
-
-    # # Display a table with the uploaded files
-    # if 'uploaded_files' in st.session_state and st.session_state['uploaded_files']:
-    #     df = pd.DataFrame(st.session_state['uploaded_files'])
-
-    #     # Display column headers
-    #     st.write('Type', 'Name', 'Date', 'Student Name', 'Percentage', 'Select Student')
-
-    #     # Iterate over each row to display the data and dropdown
-    #     for index, row in df.iterrows():
-    #         cols = st.columns(6)  # Adjust the number of columns if necessary
-    #         for i, col in enumerate(cols[:-1]):  # Loop through all columns except the last one
-    #             col.write(row[i])
-            
-    #         # Dropdown in the last column
-    #         selected_student = cols[-1].selectbox(
-    #             "",
-    #             student_names,
-    #             key=f"dropdown_{index}"  # Unique key for each dropdown
-    #         )
-    # else:
-    #     st.write("No files uploaded yet.")
-
 
     # Initialize a session state variable for storing exam details
     if 'evaluation_details' not in st.session_state:
