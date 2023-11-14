@@ -21,31 +21,6 @@ def create_students_page():
             rd.go_to_exams()
 
     st.title("Students")
-    # Sample list of student names for the dropdown
-    # student_names = [f"Student {i+1}" for i in range(10)]
-
-    # # Display a table with the uploaded files
-    # if 'uploaded_files' in st.session_state and st.session_state['uploaded_files']:
-    #     df = pd.DataFrame(st.session_state['uploaded_files'])
-
-    #     # Display column headers
-    #     st.write('Type', 'Name', 'Date', 'Student Name', 'Percentage', 'Select Student')
-
-    #     # Iterate over each row to display the data and dropdown
-    #     for index, row in df.iterrows():
-    #         cols = st.columns(6)  # Adjust the number of columns if necessary
-    #         for i, col in enumerate(cols[:-1]):  # Loop through all columns except the last one
-    #             col.write(row[i])
-            
-    #         # Dropdown in the last column
-    #         selected_student = cols[-1].selectbox(
-    #             "",
-    #             student_names,
-    #             key=f"dropdown_{index}"  # Unique key for each dropdown
-    #         )
-    # else:
-    #     st.write("No files uploaded yet.")
-
 
     # Initialize a session state variable for storing exam details
     if 'student_details' not in st.session_state:
@@ -67,32 +42,55 @@ def create_students_page():
                 serial_no = len(st.session_state.student_details) + 1
                 # Display the serial number to the user
                 st.write(f"Serial No: {serial_no}")
-                name = st.text_input('Name', key='student_name')
-                email = st.text_input('Email', key='student_email')
-                roll_number = st.text_input('Roll Number', key='student_roll_number')
-                score = st.text_input('Score', key='student_score')
-
-                # File uploader
-                uploaded_files = st.file_uploader("Choose a file", accept_multiple_files=True, key='file_uploader_students')
-
+                name = st.text_input('Name', key='name')
+                email = st.text_input('Email', key='email')
+                roll_number = st.text_input('Roll Number', key='roll_number')
                 # Submit button for the form
                 submitted = st.form_submit_button('Submit')
                 if submitted:
-                    # Hide the overlay
-                    st.session_state.show_overlay = False
                     # Store the submitted values in the session state
                     st.session_state.student_details.append({
-                        'Serial No': serial_no,
-                        'Name': name,
-                        'Email': email,
-                        'Roll Number': roll_number,
-                        'Score': score,
-                        'Files': ', '.join(file.name for file in uploaded_files) if uploaded_files else 'No files'
+                        'Serial No': len(st.session_state.student_details) + 1,
+                        'Name': st.session_state.name,
+                        'Email': st.session_state.email,
+                        'Roll Number': st.session_state.roll_number
                     })
+                    # Hide the overlay
+                    st.session_state.show_overlay = False
+                    # Clear the session state keys if needed
+                    st.session_state.pop('name', None)
+                    st.session_state.pop('email', None)
+                    st.session_state.pop('roll_number', None)
 
-    # Display the table of exam details
+    # Display the table of student details with 'View', 'Edit', and 'Delete' buttons
     if st.session_state.student_details:
         st.write('Student Details:')
+        # Create a DataFrame for the table
         df = pd.DataFrame(st.session_state.student_details)
-        # Convert DataFrame to HTML and use st.markdown to display it, without the index
-        st.markdown(df.to_html(index=False), unsafe_allow_html=True)
+
+        # Display column headers
+        col_headers = st.columns((1, 2, 2, 2, 2))
+        headers = ["Serial No", "Name", "Email", "Roll Number", "Action"]
+        for col_header, header in zip(col_headers, headers):
+            col_header.write(header)
+
+        # Iterate over the DataFrame to display the table with buttons
+        for i, row in df.iterrows():
+            cols = st.columns((1, 2, 2, 2, 1, 1, 1))
+            cols[0].write(row['Serial No'])
+            cols[1].write(row['Name'])
+            cols[2].write(row['Email'])
+            cols[3].write(row['Roll Number'])
+
+            # Action buttons
+            if cols[4].button('View', key=f"view_{i}"):
+                # Implement view logic
+                pass
+            if cols[5].button('Edit', key=f"edit_{i}"):
+                # Implement edit logic
+                pass
+            if cols[6].button('Delete', key=f"delete_{i}"):
+                # Remove the selected row from the list of student details
+                st.session_state.student_details.pop(i)
+                # Rerender the page to reflect changes
+                st.experimental_rerun()
