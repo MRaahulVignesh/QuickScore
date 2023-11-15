@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime
-import Frontend.redirect as rd
+import redirect as rd
 import pandas as pd
 
 def create_exams_page():
@@ -68,11 +68,43 @@ def create_exams_page():
                         'Files': ', '.join(file.name for file in uploaded_files) if uploaded_files else 'No files'
                     })
 
-    # Display the table of exam details
+    # Display the table of exam details with 'Edit', 'View', and 'Delete' buttons
     if st.session_state.exam_details:
         st.write('Exam Details:')
+        # Create a DataFrame for the table
         df = pd.DataFrame(st.session_state.exam_details)
-        # Convert DataFrame to HTML and use st.markdown to display it, without the index
-        st.markdown(df.to_html(index=False), unsafe_allow_html=True)
-        
 
+        # Display column headers
+        col_headers = st.columns((1, 2, 1, 1, 2, 2))
+        headers = ["Serial No", "Name", "Date", "Total Score", "Files", "Action"]
+        for col_header, header in zip(col_headers, headers):
+            col_header.write(header)
+
+        # Iterate over the DataFrame to display the table with buttons
+        for i, row in df.iterrows():
+            cols = st.columns((1, 2, 1, 1, 1, 1, 1, 1))
+            cols[0].write(i + 1)  # Adjust index if necessary
+            cols[1].write(row['Name'])
+            cols[2].write(row['Date'].strftime("%Y-%m-%d"))  # Format the date
+            cols[3].write(row['Total Score'])
+            cols[4].write(row['Files'])
+
+            # View button (you'll need to implement what 'View' should do)
+            view_button = cols[5].button('View', key=f"view_{i}")
+            if view_button:
+                # Implement what should happen when 'View' is clicked
+                pass
+
+            # Edit button (you'll need to implement what 'Edit' should do)
+            edit_button = cols[6].button('Edit', key=f"edit_{i}")
+            if edit_button:
+                # Implement what should happen when 'Edit' is clicked
+                pass
+
+            # Delete button
+            delete_button = cols[7].button('Delete', key=f"delete_{i}")
+            if delete_button:
+                # Remove the selected row from the list of exam details
+                del st.session_state.exam_details[i]
+                # Update the DataFrame to reflect the deletion and rerender the page
+                st.experimental_rerun()
