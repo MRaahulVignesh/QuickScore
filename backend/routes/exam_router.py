@@ -28,7 +28,7 @@ def get_exam(exam_id: int):
         response = JSONResponse(content=exam, status_code=status.HTTP_200_OK)
     except NotFoundError as error:
         print(error)
-        response = JSONResponse(content='{"message": "Exam doesnot exist!!"}', status_code=status.HTTP_404_NOT_FOUND_ERROR) 
+        response = JSONResponse(content='{"message": "Exam doesnot exist!!"}', status_code=status.HTTP_404_NOT_FOUND) 
     except Exception as error:
         print(error)
         response = JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -51,7 +51,10 @@ def delete_exam(id: int):
     exam_core = ExamCore()
     try:
         exam_core.delete_exam(id)
-        response = Response(status_code=status.HTTP_200_OK)       
+        response = Response(status_code=status.HTTP_200_OK)
+    except NotFoundError as error:
+        print(error)
+        response = JSONResponse(content='{"message": "Exam doesnot exist!!"}', status_code=status.HTTP_404_NOT_FOUND)           
     except Exception as error:
         response = JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     return response

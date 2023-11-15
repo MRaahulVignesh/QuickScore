@@ -3,7 +3,7 @@ from sqlalchemy import exc
 
 from backend.utils.db_conn import postgres_conn  
 from backend.utils.errors import DatabaseError, DuplicateError, NotFoundError
-from backend.models.models import StudentModel
+from backend.models.models import StudentModel, AnswerModel
 
 class StudentDao:
     def __init__(self):
@@ -46,15 +46,22 @@ class StudentDao:
         return students
 
 
-    # Delete a user
-    def delete_student(self, student_id: int):
+    def delete_student(self, id: int):
         try:
-            student = self.db.query(StudentModel).filter(StudentModel.id == student_id).first()
-            if student is None:
-                raise NotFoundError("Student doesnot exist!")
-            self.db.delete(student)
-            self.db.commit()
+            with self.db.begin() as transaction:
+                student = self.db.query(StudentModel).filter(StudentModel.id == id).first()
+                if student is None:
+                    transaction.rollback()
+                    raise NotFoundError("Student doesnot exist!")
+                self.db.query(AnswerModel).filter(AnswerModel.student_id == student.id).delete()
+                self.db.delete(student)
+                transaction.commit()
+        except NotFoundError as error:
+            raise error
         except Exception as error:
             print(error)
-            raise DatabaseError("DB operation Failed: Delete_User")
+            transaction.rollback()
+            raise DatabaseError("DB operation Failed: Delete_Student")
+        finally:
+            self.db.close()
         return True

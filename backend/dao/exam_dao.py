@@ -4,7 +4,7 @@ from sqlalchemy import exc
 
 from backend.utils.db_conn import postgres_conn  
 from backend.utils.errors import DatabaseError, DuplicateError, NotFoundError
-from backend.models.models import ExamModel
+from backend.models.models import ExamModel, AnswerModel
 
 class ExamDao:
     def __init__(self):
@@ -49,12 +49,17 @@ class ExamDao:
     # Delete a exam
     def delete_exam(self, id: int):
         try:
-            exam = self.db.query(ExamModel).filter(ExamModel.id == id).first()
-            if exam is None:
-                raise NotFoundError("Exam doesnot exist!")
-            self.db.delete(user)
-            self.db.commit()
+            with self.db.begin() as transaction:
+                exam = self.db.query(ExamModel).filter(ExamModel.id == id).first()
+                if exam is None:
+                    raise NotFoundError("Exam doesnot exist!")
+                self.db.query(AnswerModel).filter(AnswerModel.exam_id == exam.id).delete()
+                self.db.delete(exam)
+                transaction.commit()
         except Exception as error:
             print(error)
+            transaction.rollback()
             raise DatabaseError("DB operation Failed: Delete_Exam")
+        finally:
+            self.db.close()
         return True
