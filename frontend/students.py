@@ -105,24 +105,18 @@ def populate_students_table():
 
     # The URL for the API endpoint
     students_get_url = HOST_NAME + "/quick-score/students"
-    user_id = st.session_state.user_id
-
-    # The data you want to send with the POST request
     query_params = {
-        'user_id': user_id
+        'user_id': st.session_state.user_id
     }
-
-    # Set the appropriate headers for JSON - this is important!
     headers = {'Content-Type': 'application/json'}
-
-    # Send the POST request
-    response = requests.get(students_get_url, params=query_params, headers=headers)
-    print(response)
-    # Check if the request was successful
-    if response.status_code == 200:
-        student_result = response.json()
-    else:
-        print("Error in getting the student details for the user, ", user_id)
+    try:
+        response = requests.get(students_get_url, params=query_params, headers=headers)
+        if response.status_code == 200:
+            student_result = response.json()
+        else:
+            st.error(f"Error: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        st.error(f"Request failed: {e}")
         student_result = []
         
 

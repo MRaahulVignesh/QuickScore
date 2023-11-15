@@ -3,7 +3,7 @@ import redirect as rd
 from students import create_students_page
 from exams import create_exams_page
 from evaluations import create_evaluations
-import login as login
+# import login as login
 # Set the page configuration for the Streamlit app
 st.set_page_config(page_title="GradeMe", layout="wide")
 st.session_state.user_id = 1
@@ -17,8 +17,8 @@ if 'exam_details' not in st.session_state:
 if 'show_overlay' not in st.session_state:
     st.session_state.show_overlay = False
 # Initialize session state for page navigation
-# if 'page' not in st.session_state:
-#     st.session_state['page'] = 'home'
+if 'page' not in st.session_state:
+    st.session_state['page'] = 'home'
 # if 'uploaded_files' not in st.session_state:
 #     st.session_state['uploaded_files'] = []
 
@@ -79,12 +79,12 @@ def create_homepage():
 
 # Main app logic
 #login page deactivated for testing purposes
-_="""if 'page' not in st.session_state:
-        st.session_state['page'] = 'login'
-if st.session_state['page'] == 'login':
-    login.login_page()
-elif st.session_state['page'] == 'signup':
-    login.signup_page() """
+# if 'page' not in st.session_state:
+#         st.session_state['page'] = 'login'
+# if st.session_state['page'] == 'login':
+#     login.login_page()
+# elif st.session_state['page'] == 'signup':
+#     login.signup_page() 
 
 if st.session_state['page'] == 'home':
     create_homepage()
