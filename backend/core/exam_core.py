@@ -1,7 +1,7 @@
 import jwt
 import datetime
 import json
-from backend.utils.errors import NotFoundError, AuthenticationError, InternalServerError
+from backend.utils.errors import NotFoundError, AuthenticationError, InternalServerError, BadRequestError
 from backend.dao.exam_dao import ExamDao
 from backend.schemas.exam_schema import ExamResponse
 from backend.config.config import config
@@ -15,15 +15,11 @@ class ExamCore:
 
     # Create a new user
     def create_exam(self, input: ExamResponse, answer_key: str = ""):
-        if answer_key != "":
-            qs = QuestionSplitter()
-            json_answer_key = qs.splitter(answer_key)
-            print(json_answer_key)
-            if not self.__is_valid_json(str(json_answer_key)):
-                raise InternalServerError("Error in splitting the answer key!")
-            exam = self.exam_dao.create_exam(name= input.name, conducted_date=input.conducted_date, description=input.description, total_marks=input.total_marks, user_id=input.user_id, answer_key=answer_key)
-        else:
-            exam = self.exam_dao.create_exam(name= input.name, conducted_date=input.conducted_date, description=input.description, total_marks=input.total_marks, user_id=input.user_id)
+        if answer_key == "":
+            raise BadRequestError("Could not parse the pdf")
+        qs = QuestionSplitter()
+        json_answer_key = qs.splitter(answer_key)
+        exam = self.exam_dao.create_exam(name= input.name, conducted_date=input.conducted_date, description=input.description, total_marks=input.total_marks, user_id=input.user_id, answer_key=json_answer_key)
         exam = ExamResponse.model_validate(exam).model_dump(mode="json")
         return exam
 

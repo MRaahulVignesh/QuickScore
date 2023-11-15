@@ -14,7 +14,7 @@ class ExamDao:
     def create_exam(self, name: str, conducted_date: datetime, description: str, total_marks: float, user_id: int, answer_key):
         try:
             if answer_key is not None:
-                exam = ExamModel(name=name, conducted_date=conducted_date, description=description, total_marks=total_marks, user_id=user_id, answer_key=answery_key)
+                exam = ExamModel(name=name, conducted_date=conducted_date, description=description, total_marks=total_marks, user_id=user_id, answer_key=answer_key)
             else:
                 exam = ExamModel(name=name, conducted_date=conducted_date, description=description, total_marks=total_marks, user_id=user_id)                
             self.db.add(exam)
