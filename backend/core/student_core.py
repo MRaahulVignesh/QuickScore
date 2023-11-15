@@ -34,5 +34,6 @@ class StudentCore:
 
     # Delete a student
     def delete_student(self, id: int):
+        print("hello")
         self.student_dao.delete_student(id)
         return True

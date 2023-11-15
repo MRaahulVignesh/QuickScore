@@ -31,7 +31,7 @@ def get_user(user_id: int):
         response = JSONResponse(content=user, status_code=status.HTTP_200_OK)
     except NotFoundError as error:
         print(error)
-        response = JSONResponse(content='{"message": "User doesnot exist!!"}', status_code=status.HTTP_404_NOT_FOUND_ERROR) 
+        response = JSONResponse(content='{"message": "User doesnot exist!!"}', status_code=status.HTTP_404_NOT_FOUND) 
     except Exception as error:
         print(error)
         response = JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -45,7 +45,7 @@ def get_user_by_email(email: str = Query(..., description="User email")):
         response = JSONResponse(content=user, status_code=status.HTTP_200_OK)
     except NotFoundError as error:
         print(error)
-        response = JSONResponse(content='{"message": "User doesnot exist!!"}', status_code=status.HTTP_404_NOT_FOUND_ERROR) 
+        response = JSONResponse(content='{"message": "User doesnot exist!!"}', status_code=status.HTTP_404_NOT_FOUND) 
     except Exception as error:
         print(error)
         response = JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -36,6 +36,6 @@ class ExamCore:
         return new_exams
 
     # Delete a user
-    def delete_user(self, id: int):
+    def delete_exam(self, id: int):
         self.exam_dao.delete_exam(id)
         return True
