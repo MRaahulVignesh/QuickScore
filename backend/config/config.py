@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     DB_DATABASE: Optional[str] = None
 
     SECRET_KEY: Optional[str] = None
+    COHERE_API_KEY: Optional[str] = None
 
     model_config = SettingsConfigDict(env_file="./backend/.env")
 

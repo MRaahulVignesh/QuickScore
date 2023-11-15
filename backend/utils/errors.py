@@ -13,3 +13,9 @@ class NotFoundError(Exception):
 
 class AuthenticationError(Exception):
     pass
+
+class ModelError(Exception):
+    pass
+
+class BadRequestError(Exception):
+    pass
