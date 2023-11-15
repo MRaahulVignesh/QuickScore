@@ -2,13 +2,18 @@ import streamlit as st
 import redirect as rd
 import pandas as pd
 from datetime import datetime
-
+import requests
 
 if 'student_details' not in st.session_state:
     st.session_state.student_details = []
 if 'show_overlay' not in st.session_state:
     st.session_state.show_overlay = False
+
+HOST_NAME = "http://localhost:8000"
+
 def create_students_page():
+    populate_students_table()
+
     with st.sidebar:
         st.header("Grade Me")
         if st.button("Exams"):
@@ -76,21 +81,56 @@ def create_students_page():
 
         # Iterate over the DataFrame to display the table with buttons
         for i, row in df.iterrows():
-            cols = st.columns((1, 2, 2, 2, 1, 1, 1))
+            cols = st.columns((1, 2, 2, 2, 1, 1))
             cols[0].write(row['Serial No'])
             cols[1].write(row['Name'])
             cols[2].write(row['Email'])
             cols[3].write(row['Roll Number'])
 
             # Action buttons
-            if cols[4].button('View', key=f"view_{i}"):
-                # Implement view logic
-                pass
-            if cols[5].button('Edit', key=f"edit_{i}"):
+            if cols[4].button('Edit', key=f"edit_{i}"):
                 # Implement edit logic
                 pass
-            if cols[6].button('Delete', key=f"delete_{i}"):
+            if cols[5].button('Delete', key=f"delete_{i}"):
                 # Remove the selected row from the list of student details
                 st.session_state.student_details.pop(i)
                 # Rerender the page to reflect changes
                 st.experimental_rerun()
+
+def populate_students_table():
+
+    # The URL for the API endpoint
+    students_get_url = HOST_NAME + "/quick-score/students"
+    user_id = st.session_state.user_id
+
+    # The data you want to send with the POST request
+    query_params = {
+        'user_id': user_id
+    }
+
+    # Set the appropriate headers for JSON - this is important!
+    headers = {'Content-Type': 'application/json'}
+
+    # Send the POST request
+    response = requests.get(students_get_url, params=query_params, headers=headers)
+    print(response)
+    # Check if the request was successful
+    if response.status_code == 200:
+        student_result = response.json()
+    else:
+        print("Error in getting the student details for the user, ", user_id)
+        student_result = []
+        
+
+    modified_students = []
+    if len(student_result) > 0:
+        for key, student in enumerate(student_result):
+            print(student)
+            item = {
+                        'Serial No': key + 1,
+                        'Name': student["name"],
+                        'Email': student["email"],
+                        'Roll Number': student["roll_no"]
+                    }
+            modified_students.append(item)
+        st.session_state.student_details = modified_students
