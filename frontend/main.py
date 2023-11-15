@@ -78,12 +78,13 @@ def create_homepage():
 
 
 # Main app logic
-if 'page' not in st.session_state:
+#login page deactivated for testing purposes
+_="""if 'page' not in st.session_state:
         st.session_state['page'] = 'login'
 if st.session_state['page'] == 'login':
     login.login_page()
 elif st.session_state['page'] == 'signup':
-    login.signup_page()
+    login.signup_page() """
 
 if st.session_state['page'] == 'home':
     create_homepage()

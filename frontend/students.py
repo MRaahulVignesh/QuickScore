@@ -53,13 +53,15 @@ def create_students_page():
                 # Submit button for the form
                 submitted = st.form_submit_button('Submit')
                 if submitted:
+                    # Call the function to add a student
+                    add_student(st.session_state.name, st.session_state.email, st.session_state.roll_number)
                     # Store the submitted values in the session state
-                    st.session_state.student_details.append({
-                        'Serial No': len(st.session_state.student_details) + 1,
-                        'Name': st.session_state.name,
-                        'Email': st.session_state.email,
-                        'Roll Number': st.session_state.roll_number
-                    })
+                    # st.session_state.student_details.append({
+                    #     'Serial No': len(st.session_state.student_details) + 1,
+                    #     'Name': st.session_state.name,
+                    #     'Email': st.session_state.email,
+                    #     'Roll Number': st.session_state.roll_number
+                    # })
                     # Hide the overlay
                     st.session_state.show_overlay = False
                     # Clear the session state keys if needed
@@ -81,6 +83,7 @@ def create_students_page():
 
         # Iterate over the DataFrame to display the table with buttons
         for i, row in df.iterrows():
+            student_id = row["student_id"]
             cols = st.columns((1, 2, 2, 2, 1, 1))
             cols[0].write(row['Serial No'])
             cols[1].write(row['Name'])
@@ -91,9 +94,10 @@ def create_students_page():
             if cols[4].button('Edit', key=f"edit_{i}"):
                 # Implement edit logic
                 pass
-            if cols[5].button('Delete', key=f"delete_{i}"):
+            if cols[5].button('Delete', key=student_id):
+                delete_student(student_id)
                 # Remove the selected row from the list of student details
-                st.session_state.student_details.pop(i)
+                # st.session_state.student_details.pop(i)
                 # Rerender the page to reflect changes
                 st.experimental_rerun()
 
@@ -130,7 +134,68 @@ def populate_students_table():
                         'Serial No': key + 1,
                         'Name': student["name"],
                         'Email': student["email"],
-                        'Roll Number': student["roll_no"]
+                        'Roll Number': student["roll_no"],
+                        'student_id': student["id"]
                     }
             modified_students.append(item)
         st.session_state.student_details = modified_students
+    
+def delete_student(student_id):
+
+    # The URL for the API endpoint
+    student_delete_url = HOST_NAME + "/quick-score/students/" + str(student_id) 
+
+    # Set the appropriate headers for JSON - this is important!
+    headers = {'Content-Type': 'application/json'}
+
+    # Send the POST request
+    response = requests.delete(student_delete_url, headers=headers)
+    print(response)
+    # Check if the request was successful
+    if response.status_code == 200:
+        st.session_state.student_details = [
+            student for student in st.session_state.student_details if student['student_id'] != student_id
+        ]
+        st.experimental_rerun()
+    else:
+        print(f"Failed to delete student record. Status code: {response.status_code}")
+        
+    # populate_students_table()
+    # modified_students = []
+    # if len(student_result) > 0:
+    #     for key, student in enumerate(student_result):
+    #         print(student)
+    #         item = {
+    #                     'Serial No': key + 1,
+    #                     'Name': student["name"],
+    #                     'Email': student["email"],
+    #                     'Roll Number': student["roll_no"]
+    #                 }
+    #         modified_students.append(item)
+    #     st.session_state.student_details = modified_students
+
+def add_student(name, email, roll_number):
+    # The URL for the API endpoint to add a student
+    student_add_url = HOST_NAME + "/quick-score/students" 
+
+    # The data you want to send with the POST request
+    student_data = {
+        'name': name,
+        'email': email,
+        'roll_no': roll_number,
+        'user_id': st.session_state.user_id
+    }
+
+    # Set the appropriate headers for JSON
+    headers = {'Content-Type': 'application/json'}
+
+    # Send the POST request
+    response = requests.post(student_add_url, json=student_data, headers=headers)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        st.success("Student added successfully.")
+        # Optionally, rerun to refresh the data
+        st.experimental_rerun()
+    else:
+        st.error(f"Failed to add student. Status code: {response.status_code}")
