@@ -5,6 +5,7 @@ from backend.routes.user_router import user_router
 from backend.routes.exam_router import exam_router
 from backend.routes.student_router import student_router
 from backend.routes.answer_router import answer_router
+from backend.routes.context_router import context_router
 
 def authorization_service_startup():
     print("Starting up -- Authorization server!!")
@@ -30,3 +31,4 @@ server.include_router(user_router, prefix="/quick-score/users")
 server.include_router(exam_router, prefix="/quick-score/exams")
 server.include_router(student_router, prefix="/quick-score/students")
 server.include_router(answer_router, prefix="/quick-score/answers")
+server.include_router(context_router, prefix="/quick-score/context")

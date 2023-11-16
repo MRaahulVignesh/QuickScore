@@ -10,5 +10,13 @@ class CreateAnswer(BaseModel):
     class Config:
         from_attributes = True 
 
-class AnswerResponse(CreateAnswer):
+class AnswerResponse(BaseModel):
     id: int
+    student_name: str
+    student_roll_no: str
+    score: float
+
+    class Config:
+        from_attributes = True     
+    
+    
