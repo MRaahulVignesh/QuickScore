@@ -14,16 +14,16 @@
 #         return hashed_text
 #     return False
 
-# # Database mockup
-# user_data = {
-#     "e1": ("u1", "p1"),
-#     "email2@example.com": ("username2", "hash_of_password2")
-#     # Add more users as needed
-# }
-# # Example to generate a hash for a plain text password
-# plain_text_password = "p1"
-# hashed_password = hashlib.sha256(plain_text_password.encode()).hexdigest()
-# print("hashed_password",hashed_password)
+# # # Database mockup
+# # user_data = {
+# #     "e1": ("u1", "p1"),
+# #     "email2@example.com": ("username2", "hash_of_password2")
+# #     # Add more users as needed
+# # }
+# # # Example to generate a hash for a plain text password
+# # plain_text_password = "p1"
+# # hashed_password = hashlib.sha256(plain_text_password.encode()).hexdigest()
+# # print("hashed_password",hashed_password)
 
 
 # # Page Functions

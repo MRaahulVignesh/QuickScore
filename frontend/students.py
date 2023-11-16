@@ -20,8 +20,6 @@ def create_students_page():
             rd.go_to_exams()
         if st.button("Students"):
             rd.go_to_students()
-        if st.button("Evaluations"):
-            rd.go_to_evaluations()
         if st.button("Log Out"):
             rd.go_to_exams()
 

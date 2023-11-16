@@ -3,10 +3,23 @@ import redirect as rd
 from students import create_students_page
 from exams import create_exams_page
 from evaluations import create_evaluations
+import time
 # import login as login
 # Set the page configuration for the Streamlit app
 st.set_page_config(page_title="GradeMe", layout="wide")
 st.session_state.user_id = 1
+
+#background image test
+page_bg_img = '''
+<style>
+body {
+background-image: url("/Users/devadharshiniravichandranlalitha/Documents/lablab/Cohere grade me/QuickScore/frontend/bg-quick-score.png");
+background-size: cover;
+}
+</style>
+'''
+
+st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Initialize session state variables outside the function
 if 'uploaded_files' not in st.session_state:
@@ -17,8 +30,7 @@ if 'exam_details' not in st.session_state:
 if 'show_overlay' not in st.session_state:
     st.session_state.show_overlay = False
 # Initialize session state for page navigation
-if 'page' not in st.session_state:
-    st.session_state['page'] = 'home'
+
 # if 'uploaded_files' not in st.session_state:
 #     st.session_state['uploaded_files'] = []
 
@@ -45,9 +57,18 @@ def custom_button(text, on_click=None):
 def create_homepage():
     st.title("Grade and Respond")
     st.write("Efficiently grade and provide feedback on student answer papers")
-    
+    # with st.status("Downloading data...", expanded=True) as status:
+    #     st.write("Searching for data...")
+    #     time.sleep(2)
+    #     st.write("Found URL.")
+    #     time.sleep(1)
+    #     st.write("Downloading data...")
+    #     time.sleep(1)
+    #     status.update(label="Download complete!", state="complete", expanded=False)
+    # with st.spinner('Uploading exam details...'):
+    #     time.sleep(25)
     if custom_button("Get Started", on_click=rd.go_to_exams):
-        pass  # The button click will change the session state to 'upload'
+            pass  # The button click will change the session state to 'upload'
 
     st.write("---")
 
@@ -85,6 +106,9 @@ def create_homepage():
 #     login.login_page()
 # elif st.session_state['page'] == 'signup':
 #     login.signup_page() 
+
+if 'page' not in st.session_state:
+    st.session_state['page'] = 'home'
 
 if st.session_state['page'] == 'home':
     create_homepage()
