@@ -25,7 +25,7 @@ class ExamModel(Base):
     total_marks = Column(Float, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
     answer_key = Column(JSON, default={})
-    context_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    # context_id = Column(Integer, ForeignKey('contexts.id'), nullable=True)
 
 # Define the Student model
 class StudentModel(Base):
@@ -52,5 +52,6 @@ class ContextModel(Base):
 
     id = Column(Integer, primary_key=True)
     name = Column(String(255), nullable=False)
-    comments = Column(String(255), nullable=False)
+    comments = Column(String(255), nullable=True)
+    context_key = Column(String(255), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))    
