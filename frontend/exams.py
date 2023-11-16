@@ -57,7 +57,7 @@ def create_exams_page():
                     }
                     print("json_data = ", json_data)
 
-                    add_exam(json_data, '/Users/devadharshiniravichandranlalitha/Downloads/Question.pdf')
+                    add_exam(json_data, '/Users/devadharshiniravichandranlalitha/Downloads/Question_new.pdf')
                     # Hide the overlay
                     st.session_state.show_overlay = False
 
@@ -155,23 +155,23 @@ def remove_exam(delete_id):
 def add_exam(json_data, file_url):
     cream_exam_url = HOST_NAME + "/quick-score/exams"
     
-    with open(file_url, 'rb') as pdf_file:
-        multipart_data = MultipartEncoder(
-            fields = {
-                'file': ('answerkey.pdf', open(file_url, 'rb'), 'application/pdf'),
-                'exam': json.dumps(json_data)
-            }
-        )   
+    # with open(file_url, 'rb') as pdf_file:
+    multipart_data = MultipartEncoder(
+        fields = {
+            'file': ('answerkey.pdf', open(file_url, 'rb'), 'application/pdf'),
+            'exam': json.dumps(json_data)
+        }
+    )   
+    print("multipart_data exams= ", multipart_data.to_string())
+    headers = {'Content-Type': multipart_data.content_type}  
+    with st.spinner('Uploading exam details...'):
+        response = requests.post(cream_exam_url, data=multipart_data.to_string(), headers=headers)
 
-        headers = {'Content-Type': multipart_data.content_type}  
-        with st.spinner('Uploading exam details...'):
-            response = requests.post(cream_exam_url, data=multipart_data.to_string(), headers=headers)
-
-        if response.status_code == 200:
-            st.success("Student added successfully.")
-            # Optionally, rerun to refresh the data
-            st.experimental_rerun()
-        else:
-            print("response json=", response.json())
-            st.error(f"Failed to add exam. Status code: {response.status_code}")
+    if response.status_code == 200:
+        st.success("Student added successfully.")
+        # Optionally, rerun to refresh the data
+        st.experimental_rerun()
+    else:
+        print("response json=", response.json())
+        st.error(f"Failed to add exam. Status code: {response.status_code}")
 
