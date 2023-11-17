@@ -75,14 +75,16 @@ class AnswerCore:
         # inserting the result
         answer_result = self.answer_dao.create_answer(exam_id=input.exam_id, student_id=input.student_id, score=score, confidence=confidence, evaluation_details=evaluation_result, filename=filename)
         answer, student = self.__extract_answer_and_student(answer_result)
-        tmp = self.__create_answer_response(answer, student)
+        tmp = self.__create_answer_response(answer, student, exam)
         # answer = AnswerResponse.model_validate(tmp).model_dump(mode="json")
         return tmp
 
     def get_answer_by_id(self, id: int):
         answer_result = self.answer_dao.get_answer_by_id(id)
         answer, student = self.__extract_answer_and_student(answer_result)
-        tmp = self.__create_individual_answer_response(answer, student)
+        exam = self.exam_dao.get_exam_by_id(answer["exam_id"])
+        exam = exam[0].__dict__
+        tmp = self.__create_individual_answer_response(answer, student, exam)
         return tmp
 
     def get_answers_by_exam_id(self, exam_id: int):
@@ -109,7 +111,7 @@ class AnswerCore:
         result["file_name"] = answer["file_name"]
         return result
 
-    def __create_individual_answer_response(self, answer, student):
+    def __create_individual_answer_response(self, answer, student, exam):
         result = {}
         result["id"] = answer["id"]
         result["student_name"] = student["name"]
@@ -118,6 +120,7 @@ class AnswerCore:
         result["confidence"] = answer["confidence"]
         result["file_name"] = answer["file_name"]
         result["evaluation_details"] = answer["evaluation_details"]
+        result["max_exam_score"] = exam["total_marks"]
         return result
     
     def __extract_answer_and_student(self, input):
