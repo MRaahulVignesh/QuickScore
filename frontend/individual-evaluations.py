@@ -1,7 +1,9 @@
 import streamlit as st
 import chat
+import requests
 
 st.set_page_config(layout="wide")
+HOST_NAME = "http://localhost:8000"
 
 with st.sidebar:
     st.title("Grade Me")
@@ -16,39 +18,49 @@ with st.sidebar:
     
     
 # Sample data for the carousel
-carousel_items = [
-    {
-        "question": "What is the capital of France?",
-        "student_answer": "Paris",
-        "marks": "5/5",
-        "justification": "The answer is correct and well-justified."
-    },
-    {
-        "question": "What is the boiling point of water?",
-        "student_answer": "100 degrees Celsius",
-        "marks": "5/5",
-        "justification": "Correct answer. The student accurately stated the boiling point of water at standard atmospheric pressure."
-    },
-    {
-        "question": "Who wrote 'To Kill a Mockingbird'?",
-        "student_answer": "Harper Lee",
-        "marks": "5/5",
-        "justification": "Correct. The student correctly identified the author of the novel."
-    },
-    {
-        "question": "Solve for x: 2x + 3 = 9",
-        "student_answer": "x = 3",
-        "marks": "5/5",
-        "justification": "The solution is correct. The student showed good algebraic skills."
-    },
-    {
-        "question": "What is the largest planet in our Solar System?",
-        "student_answer": "Jupiter",
-        "marks": "5/5",
-        "justification": "Correct answer. The student correctly identified Jupiter as the largest planet."
-    }
-]
+carousel_items = []
 
+def get_evaluation_details(_id):
+
+    # The URL for the API endpoint
+    url = HOST_NAME + "/quick-score/answers/"+str(_id)
+
+    # Set the appropriate headers for JSON - this is important!
+    headers = {'Content-Type': 'application/json'}
+
+    # Send the POST request
+    response = requests.get(url, headers=headers)
+
+    # Check if the request was successful
+    if response.status_code == 200:
+        answer_result = response.json()
+        return answer_result
+    else:
+        print("Error in getting the exam details for the user, ", user_id)
+        exam_result = []
+        
+
+    # modified_exams = []
+    # if len(exam_result) > 0:
+    #     for key, exam in enumerate(exam_result):
+    #         print(exam)
+    #         item = {
+    #                     'id': exam["id"],
+    #                     'Serial No': key+1,
+    #                     'Name': exam["name"],
+    #                     'Date': exam["conducted_date"],
+    #                     'Total Score': exam["total_marks"],
+    #                     # Store uploaded file info or handle file processing here
+    #                     'Files': 'dummy file'
+    #                 }
+    #         modified_exams.append(item)
+    #     st.session_state.exam_details = modified_exams
+evaluation_data = get_evaluation_details(3)
+carousel_items = evaluation_data["evaluation_details"]
+student_name = evaluation_data["student_name"]
+student_roll = evaluation_data["student_roll_no"]
+total_marks = evaluation_data["score"]
+total_student_marks = evaluation_data["score"]
 
 def display_info(data):
     markdown_template = f"""
@@ -77,8 +89,6 @@ def display_info(data):
             <p style="color: #000;">{data["question"]}</p>
             <h6 style="color: #4F8BF9;">Student Answer</h2>
             <p style="color: #000;">{data["student_answer"]}</p>
-            <h6 style="color: #4F8BF9;">Marks</h2>
-            <p style="color: #000;"><b>{data["marks"]}</b></p>
             <h6 style="color: #4F8BF9;">Justification</h2>
             <p style="color: #000;">{data["justification"]}</p>
         </div>
@@ -105,8 +115,6 @@ col1, col2, col3 = st.columns([2, 10, 2])
 # Previous Button
 with col1:
     prev_button = st.button("Previous", on_click=prev_item)
-    student_name = "Raahul Vignesh"
-    student_roll = "111231231"
     st.write("\n\n\n\n\n\n\n\n\n\n\n\n")
     markdown_template1 = f"""
         <div style="font-family: sans-serif;  padding: 10px; border-radius: 10px; border: 1px solid #cccccc; margin: 10px 0;">
@@ -133,10 +141,8 @@ with col2:
 # Next Button
 with col3:
     next_button = st.button("Next    ", on_click=next_item)
-    score = 4
+    score = carousel_items[st.session_state.carousel_index]["marks"]
     total_question_marks = 5
-    total_student_marks = 9
-    total_marks = 10
     st.write("\n\n\n\n\n\n\n\n\n\n\n\n")
     markdown_template1 = f"""
         <div style="font-family: sans-serif;  padding: 10px; border-radius: 10px; border: 1px solid #cccccc; margin: 10px 0;">
@@ -156,3 +162,4 @@ with col3:
     
 
 chat.render_page()
+    
