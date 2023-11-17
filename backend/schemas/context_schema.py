@@ -12,3 +12,4 @@ class CreateContext(BaseModel):
 class ContextResponse(CreateContext):
     id: int
     context_key: str
+    file_name: str

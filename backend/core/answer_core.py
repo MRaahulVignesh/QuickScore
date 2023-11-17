@@ -4,7 +4,7 @@ import datetime
 from backend.utils.errors import NotFoundError, AuthenticationError
 from backend.dao.answer_dao import AnswerDao
 from backend.dao.exam_dao import ExamDao
-from backend.schemas.answer_schema import AnswerResponse, CreateAnswer
+from backend.schemas.answer_schema import AnswerResponse, CreateAnswer, AnswerIndividualResponse
 from backend.config.config import config
 from backend.rag_models.question_splitter import QuestionSplitter
 from backend.rag_models.grader import GraderCohere
@@ -16,7 +16,7 @@ class AnswerCore:
         self.exam_dao = ExamDao()
     
 
-    def create_answer(self, input: CreateAnswer, answer_pdf):
+    def create_answer(self, input: CreateAnswer, answer_pdf, filename):
         
         # send the json_answer_pdf and json_answer_key to the model
         exam_context_details = self.exam_dao.get_exam_by_id(input.exam_id)
@@ -73,18 +73,17 @@ class AnswerCore:
         confidence = 0.0
         
         # inserting the result
-        answer_result = self.answer_dao.create_answer(exam_id=input.exam_id, student_id=input.student_id, score=score, confidence=confidence)
+        answer_result = self.answer_dao.create_answer(exam_id=input.exam_id, student_id=input.student_id, score=score, confidence=confidence, evaluation_details=evaluation_result, filename=filename)
         answer, student = self.__extract_answer_and_student(answer_result)
         tmp = self.__create_answer_response(answer, student)
-        answer = AnswerResponse.model_validate(tmp).model_dump(mode="json")
-        return answer
+        # answer = AnswerResponse.model_validate(tmp).model_dump(mode="json")
+        return tmp
 
     def get_answer_by_id(self, id: int):
         answer_result = self.answer_dao.get_answer_by_id(id)
         answer, student = self.__extract_answer_and_student(answer_result)
-        tmp = self.__create_answer_response(answer, student)
-        answer = AnswerResponse.model_validate(tmp).model_dump(mode="json")
-        return answer
+        tmp = self.__create_individual_answer_response(answer, student)
+        return tmp
 
     def get_answers_by_exam_id(self, exam_id: int):
         answers = self.answer_dao.get_answers_by_exam_id(exam_id)
@@ -107,6 +106,18 @@ class AnswerCore:
         result["student_roll_no"] = student["roll_no"]
         result["score"] = answer["score"]
         result["confidence"] = answer["confidence"]
+        result["file_name"] = answer["file_name"]
+        return result
+
+    def __create_individual_answer_response(self, answer, student):
+        result = {}
+        result["id"] = answer["id"]
+        result["student_name"] = student["name"]
+        result["student_roll_no"] = student["roll_no"]
+        result["score"] = answer["score"]
+        result["confidence"] = answer["confidence"]
+        result["file_name"] = answer["file_name"]
+        result["evaluation_details"] = answer["evaluation_details"]
         return result
     
     def __extract_answer_and_student(self, input):

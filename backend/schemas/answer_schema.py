@@ -5,7 +5,6 @@ from datetime import date
 class CreateAnswer(BaseModel):
     student_id: int
     exam_id: int
-    score: Optional[float] = None
 
     class Config:
         from_attributes = True 
@@ -16,8 +15,9 @@ class AnswerResponse(BaseModel):
     student_roll_no: str
     score: float
     confidence: float
-
-    class Config:
-        from_attributes = True     
+    file_name: str 
+        
+class AnswerIndividualResponse(AnswerResponse):
+    evaluation_details: str
     
     

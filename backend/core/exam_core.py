@@ -14,12 +14,12 @@ class ExamCore:
         self.exam_dao = ExamDao()
 
     # Create a new user
-    def create_exam(self, input: ExamResponse, answer_key: str = ""):
+    def create_exam(self, input: ExamResponse, filename:str, answer_key: str = ""):
         if answer_key == "":
             raise BadRequestError("Could not parse the pdf")
         qs = QuestionSplitter()
         json_answer_key = qs.splitter(answer_key)
-        exam = self.exam_dao.create_exam(name= input.name, conducted_date=input.conducted_date, description=input.description, total_marks=input.total_marks, user_id=input.user_id, answer_key=json_answer_key, context_id=input.context_id)
+        exam = self.exam_dao.create_exam(name= input.name, conducted_date=input.conducted_date, description=input.description, total_marks=input.total_marks, user_id=input.user_id, answer_key=json_answer_key, context_id=input.context_id, filename=filename)
         exam = ExamResponse.model_validate(exam).model_dump(mode="json")
         return exam
 
@@ -54,3 +54,11 @@ class ExamCore:
         except ValueError as error:
             print(error)
             return False
+    
+    # def get_exam_result(self, exam):
+    #     exam_result = {}
+    #     exam_result["name"] = exam["name"]
+    #     exam_result["conducted_date"] = exam["conducted_date"]
+    #     exam_result["total_marks"] = exam["total_marks"]
+    #     exam_result["answer_marks"] = exam["total_marks"]
+        

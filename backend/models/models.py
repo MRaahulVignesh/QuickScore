@@ -26,6 +26,7 @@ class ExamModel(Base):
     user_id = Column(Integer, ForeignKey('users.id'))
     answer_key = Column(JSON, default={})
     context_id = Column(Integer, ForeignKey('contexts.id'), nullable=True)
+    file_name = Column(String(255), nullable=False)
 
 # Define the Student model
 class StudentModel(Base):
@@ -46,6 +47,8 @@ class AnswerModel(Base):
     exam_id = Column(Integer, ForeignKey('exams.id'))
     score = Column(Float, default=0.0)
     confidence = Column(Float, default=0.0)
+    evaluation_details = Column(JSON, default={})
+    file_name = Column(String(255), nullable=False)
     
 # Define the Answer model
 class ContextModel(Base):
@@ -56,6 +59,7 @@ class ContextModel(Base):
     comments = Column(String(255), nullable=True)
     context_key = Column(String(255), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
+    file_name = Column(String(255), nullable=False)
         
 
 

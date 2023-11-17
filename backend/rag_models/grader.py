@@ -50,14 +50,16 @@ class GraderCohere:
         graded = []
         print("hello12345")
         if self.class_name is not None:
-            print(se)
             for item in list_json:
                 
                 p1 = f""" 
                     ```
-                    Question: {item['question']}
-                    Answer Key: {item['answer_key']}
-                    Student Answer: {item['student_answer']}
+                    Question: 
+                        {item['question']}
+                    Answer Key: 
+                        {item['answer_key']}
+                    Student Answer: 
+                        {item['student_answer']}
                     ```
                     
                     Below is the Task to be performed
@@ -65,12 +67,17 @@ class GraderCohere:
                         Grade leniently the Student Answer out of 5 marks, with 5 being maximum mark awarded for a correct answer and 0 being the minimum mark awarded for a completely wrong answer. 
                         Partial marks can also be awarded if the answer is partially correct. 
                         Mention the mark and explain with proper justification for awarding or not awarding marks.
-                        Prompt: Can you respond only by printing in the following json format which could be converted into json without any errors:
-                        {{\"Marks\": ,\n\"Justification\": ,\n}}
+                        Prompt: Can you respond only by printing in the following json output format which could be converted into json without any errors:
+                        
+                        output format:
+                            {{"Marks": <insert awarded marks after evaluation>,
+                             "Justification": <insert justification>,
+                            }}
                 """ 
-        
+                print(p1)
                 # p1 = "Question: "+item['question']+"\nAnswer Key: "+item['answer_key']+"\nStudent Answer: "+item['student_answer']+"\n Grade leniently the Student Answer out of 5 marks, with 5 being maximum mark awarded for a correct answer and 0 being the minimum mark awarded for a completely wrong answer. Partial marks can also be awarded if the answer is partially correct. Mention the mark and explain with proper justification for awarding or not awarding marks.\n Prompt: Can you respond only by printing in the following json format which could be converted into json without any errors:\n  \n{\"Marks\": ,\n\"Justification\": ,\n}\n \n"
                 response = self.chain({"query": p1})['result']
+                print(response)
                 resp = json.loads(response)
                 graded.append(resp)
         else:
