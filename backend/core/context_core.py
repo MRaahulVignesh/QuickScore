@@ -1,10 +1,11 @@
 import jwt
 import datetime
-
-from backend.utils.errors import NotFoundError, AuthenticationError
+import uuid
+from backend.utils.errors import NotFoundError, AuthenticationError, ModelError
 from backend.dao.context_dao import ContextDao
 from backend.schemas.context_schema import ContextResponse, CreateContext
 from backend.config.config import config
+from backend.rag_models.vector_store import VectorDB
 
 class ContextCore:
 
@@ -12,9 +13,19 @@ class ContextCore:
         self.context_dao = ContextDao()
 
     # Create a new context
-    def create_context(self, input: CreateContext):
-        context = self.context_dao.create_context(name= input.name, roll_no= input.roll_no, email= input.email, user_id=input.user_id)
-        context = ContextResponse.model_validate(context).model_dump(mode="json")
+    def create_context(self, input: CreateContext, context_pdf = None):
+        if context_pdf is None:
+            raise BadRequestError("Could not parse the pdf")
+        uuid_str = str(uuid.uuid4()).replace('-', '')
+        context_unique_key = "CONTEXT"+uuid_str[0].upper() + uuid_str[1:]
+
+        vector_db = VectorDB()
+        result = vector_db.embed_and_store(context_pdf, context_unique_key)
+        if result:
+            context = self.context_dao.create_context(name= input.name, comments=input.comments, context_key=context_unique_key, user_id=input.user_id)
+            context = ContextResponse.model_validate(context).model_dump(mode="json")
+        else:
+            raise ModelError("Could Process the context pdf!")
         return context
 
     # Retrieve a context by id

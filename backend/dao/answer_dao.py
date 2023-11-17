@@ -9,9 +9,9 @@ class AnswerDao:
     def __init__(self):
         self.db = postgres_conn.get_db()
 
-    def create_answer(self, student_id: int, exam_id: int, score: float):
+    def create_answer(self, student_id: int, exam_id: int, score: float, confidence: float):
         try:
-            answer = AnswerModel(score=score, student_id=student_id, exam_id=exam_id)
+            answer = AnswerModel(score=score, student_id=student_id, exam_id=exam_id, confidence=confidence)
             self.db.add(answer)
             self.db.commit()
             self.db.refresh(answer)

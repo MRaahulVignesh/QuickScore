@@ -25,7 +25,7 @@ class ExamModel(Base):
     total_marks = Column(Float, nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'))
     answer_key = Column(JSON, default={})
-    # context_id = Column(Integer, ForeignKey('contexts.id'), nullable=True)
+    context_id = Column(Integer, ForeignKey('contexts.id'), nullable=True)
 
 # Define the Student model
 class StudentModel(Base):
@@ -45,6 +45,7 @@ class AnswerModel(Base):
     student_id = Column(Integer, ForeignKey('students.id'))
     exam_id = Column(Integer, ForeignKey('exams.id'))
     score = Column(Float, default=0.0)
+    confidence = Column(Float, default=0.0)
     
 # Define the Answer model
 class ContextModel(Base):

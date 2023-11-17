@@ -19,7 +19,7 @@ class ExamCore:
             raise BadRequestError("Could not parse the pdf")
         qs = QuestionSplitter()
         json_answer_key = qs.splitter(answer_key)
-        exam = self.exam_dao.create_exam(name= input.name, conducted_date=input.conducted_date, description=input.description, total_marks=input.total_marks, user_id=input.user_id, answer_key=json_answer_key)
+        exam = self.exam_dao.create_exam(name= input.name, conducted_date=input.conducted_date, description=input.description, total_marks=input.total_marks, user_id=input.user_id, answer_key=json_answer_key, context_id=input.context_id)
         exam = ExamResponse.model_validate(exam).model_dump(mode="json")
         return exam
 
@@ -28,8 +28,9 @@ class ExamCore:
         exam = self.exam_dao.get_exam_by_id(id)
         if exam is None:
             raise NotFoundError("Exam doesnot exist!")
-        exam = ExamResponse.model_validate(exam).model_dump(mode="json")
-        return exam
+        exam_obj = exam[0]
+        exam_res = ExamResponse.model_validate(exam_obj).model_dump(mode="json")
+        return exam_res
 
     # Retrieve a user by email
     def get_exams_by_user_id(self, user_id: int):
@@ -37,7 +38,7 @@ class ExamCore:
         exams = self.exam_dao.get_exams_by_user_id(user_id)
         new_exams = []
         for exam in exams:
-            tmp = ExamResponse.model_validate(exam).model_dump(mode="json")
+            tmp = ExamResponse.model_validate(exam[0]).model_dump(mode="json")
             new_exams.append(tmp)
         return new_exams
 

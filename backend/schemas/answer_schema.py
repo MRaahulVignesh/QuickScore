@@ -15,6 +15,7 @@ class AnswerResponse(BaseModel):
     student_name: str
     student_roll_no: str
     score: float
+    confidence: float
 
     class Config:
         from_attributes = True     

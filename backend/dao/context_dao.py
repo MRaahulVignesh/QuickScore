@@ -10,9 +10,9 @@ class ContextDao:
         self.db = postgres_conn.get_db()
 
     # Create a new user
-    def create_context(self, name: str, comments: str, user_id: int):
+    def create_context(self, name: str, comments: str, user_id: int, context_key: str):
         try:
-            context = ContextModel(name=name, comments=comments, user_id=user_id)
+            context = ContextModel(name=name, comments=comments, user_id=user_id, context_key=context_key)
             self.db.add(context)
             self.db.commit()
             self.db.refresh(context)
@@ -53,7 +53,7 @@ class ContextDao:
                 if context is None:
                     transaction.rollback()
                     raise NotFoundError("Context doesnot exist!")
-                self.db.query(AnswerModel).filter(AnswerModel.context_id == context.id).update({AnswerModel.context_id: None})
+                self.db.query(ExamModel).filter(ExamModel.context_id == context.id).update({ExamModel.context_id: None})
                 self.db.delete(context)
                 transaction.commit()
         except NotFoundError as error:
