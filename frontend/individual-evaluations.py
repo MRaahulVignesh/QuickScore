@@ -59,7 +59,7 @@ evaluation_data = get_evaluation_details(3)
 carousel_items = evaluation_data["evaluation_details"]
 student_name = evaluation_data["student_name"]
 student_roll = evaluation_data["student_roll_no"]
-total_marks = evaluation_data["score"]
+total_marks = evaluation_data["max_exam_score"]
 total_student_marks = evaluation_data["score"]
 
 def display_info(data):
