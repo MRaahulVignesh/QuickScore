@@ -5,40 +5,42 @@ from backend.schemas.context_schema import CreateContext
 from backend.core.context_core import ContextCore
 from backend.utils.errors import NotFoundError
 from pydantic import ValidationError
+from langchain.document_loaders import PyPDFLoader
 
-import pdfplumber
-import tempfile
 import io
 import json
+import tempfile
 
 context_router = APIRouter()
 
 @context_router.post("/")
-async def create_context(file: UploadFile = File(...), context_data: str = Form(...)):
-    print(file, type(file))
+async def create_context(file: UploadFile = File(...), context: str = Form(...)):
     try:
         if not file.filename.endswith(".pdf"):
             return JSONResponse(content='{"message": "Only PDF files are allowed."}', status_code=status.HTTP_400_BAD_REQUEST)
-    
-        # Read the uploaded PDF file as bytes
-        pdf_data = await file.read()
+        
+        context_pdf = None
+        with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+            # Read the content from the uploaded file
+            contents = await file.read()
 
-        # Process the PDF data in memory
-        # For example, you can use a library like pdfplumber to extract text
-        # Here's a simple example using pdfplumber:
+            # Write the content to the temporary file
+            temp_file.write(contents)
+            temp_file.flush()
 
-        with pdfplumber.open(io.BytesIO(pdf_data)) as pdf:
-            context_pdf = ""
-            for page in pdf.pages:
-                context_pdf += page.extract_text()
-    
+            # Get the path of the temporary file
+            temp_file_path = temp_file.name
+            
+            loader = PyPDFLoader(temp_file_path)
+            context_pdf = loader.load()
+        
     except Exception as error:
         print(error)
         return JSONResponse(content='{"message": "Some Exception has occurred!!"}', status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     # Parse the JSON data
     try:
-        parsed_context_data = json.loads(context_data)
+        parsed_context_data = json.loads(context)
     except json.JSONDecodeError as e:
         print(e)
         return JSONResponse(content='{"message": "Invalid JSON data!!"}', status_code=status.HTTP_400_BAD_REQUEST)
@@ -76,10 +78,10 @@ def get_context(context_id: int):
     return response
 
 @context_router.get("/")
-def get_contexts_by_exam_id(exam_id: str = Query(..., description="Exam Id")):
+def get_contexts_by_exam_id(user_id: str = Query(..., description="Exam Id")):
     context_core = ContextCore()
     try:
-        contexts = context_core.get_contexts_by_exam_id(exam_id)
+        contexts = context_core.get_contexts_by_user_id(user_id)
         response = JSONResponse(content=contexts, status_code=status.HTTP_200_OK)
     except Exception as error:
         print(error)

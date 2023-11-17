@@ -8,6 +8,7 @@ class CreateExam(BaseModel):
     total_marks: float
     conducted_date: date
     user_id: int
+    context_id: int
     
     class Config:
         from_attributes = True 

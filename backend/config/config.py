@@ -11,7 +11,9 @@ class Settings(BaseSettings):
 
     SECRET_KEY: Optional[str] = None
     COHERE_API_KEY: Optional[str] = None
-
+    WEAVIATE_API_KEY: Optional[str] = None
+    WEAVIATE_URL: Optional[str] = None
+    
     model_config = SettingsConfigDict(env_file="./backend/.env")
 
 
