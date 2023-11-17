@@ -3,7 +3,7 @@ from sqlalchemy import exc
 
 from backend.utils.db_conn import postgres_conn  
 from backend.utils.errors import DatabaseError, DuplicateError, NotFoundError
-from backend.models.models import ContextModel, AnswerModel
+from backend.models.models import ContextModel, ExamModel
 
 class ContextDao:
     def __init__(self):

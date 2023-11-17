@@ -55,4 +55,8 @@ class ContextModel(Base):
     name = Column(String(255), nullable=False)
     comments = Column(String(255), nullable=True)
     context_key = Column(String(255), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'))    
+    user_id = Column(Integer, ForeignKey('users.id'))
+        
+
+
+    

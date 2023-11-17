@@ -20,12 +20,16 @@ class AnswerCore:
         
         # send the json_answer_pdf and json_answer_key to the model
         exam_context_details = self.exam_dao.get_exam_by_id(input.exam_id)
-        exam_details = exam_context_details[0].__dict__
-        context_details = exam_context_details[1].__dict__
+        if exam_context_details[0] is not None:
+            exam_details = exam_context_details[0].__dict__
+        else:
+            raise InternalServerError("Provided Exam Details not Present")
         
-        context_key = context_details["context_key"]
-        
-        print(exam_details, context_details)
+        if exam_context_details[1] is not None:
+            context_details = exam_context_details[1].__dict__
+            context_key = context_details["context_key"]
+        else:
+            context_key = None
         
         # parsing the pdf 
         if answer_pdf == "":
@@ -35,23 +39,35 @@ class AnswerCore:
         json_answer_pdf = qs.splitter(answer_pdf)
         json_answer_key = exam_details["answer_key"]
         
+        sorted_student_answer = self.__sort_json_by_no(json_answer_pdf)
+        sorted_answer_key = self.__sort_json_by_no(json_answer_key)
+
+        
         # #list json
-        # j,k=0,0
-        # for i in range(max(len(json_answer_pdf), len(json_answer_key))):
-        #     q_no_j = 
-        #     q_no_k = json_answer_key[k]
-        #     if json_answer_pdf[j]["no"] == json_answer_key[k]["no"]:
-                
-            
-
+        j,k=0,0
+        json_answer_list = []
+        for i in range(max(len(sorted_student_answer), len(sorted_answer_key))):
+            temp={}
+            if sorted_student_answer[j]["no"] == sorted_answer_key[k]["no"]:
+                temp["question"] = sorted_answer_key[k]["question"]
+                temp["student_answer"] = sorted_student_answer[j]["answer"]
+                temp["answer_key"] = sorted_answer_key[k]["answer"]
+                j+=1
+                k+=1
+            elif sorted_student_answer[j]["no"] > sorted_answer_key[k]["no"]:
+                temp["question"] = sorted_answer_key[k]["question"]
+                temp["student_answer"] = ""
+                temp["answer_key"] = sorted_answer_key[k]["asnwer"]      
+                k+=1
+            else:
+                raise InternalServerError("Error in Answer key")   
+            json_answer_list.append(temp)                        
         
-        # print(context_key)
-        # cohere_grader = GraderCohere(context_key)
-        # cohere_grader.grade()
+        cohere_grader = GraderCohere(context_key)
+        evaluation_result, total_score = cohere_grader.grade(json_answer_list)
 
-        
         #calculate the score
-        score = 0.0
+        score = total_score
         
         #calculate the confidence
         confidence = 0.0
@@ -97,3 +113,7 @@ class AnswerCore:
         student = input[0].__dict__
         answer = input[1].__dict__
         return answer, student
+    
+    def __sort_json_by_no(self, json_data):
+        # Sort the list of dictionaries by the value of the "no" key
+        return sorted(json_data, key=lambda x: x['no'])
