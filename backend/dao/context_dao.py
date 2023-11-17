@@ -3,16 +3,16 @@ from sqlalchemy import exc
 
 from backend.utils.db_conn import postgres_conn  
 from backend.utils.errors import DatabaseError, DuplicateError, NotFoundError
-from backend.models.models import ContextModel, AnswerModel
+from backend.models.models import ContextModel, ExamModel
 
 class ContextDao:
     def __init__(self):
         self.db = postgres_conn.get_db()
 
     # Create a new user
-    def create_context(self, name: str, comments: str, user_id: int, context_key: str):
+    def create_context(self, name: str, comments: str, user_id: int, context_key: str, filename: str,):
         try:
-            context = ContextModel(name=name, comments=comments, user_id=user_id, context_key=context_key)
+            context = ContextModel(name=name, comments=comments, user_id=user_id, context_key=context_key, file_name=filename)
             self.db.add(context)
             self.db.commit()
             self.db.refresh(context)

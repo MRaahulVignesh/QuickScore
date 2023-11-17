@@ -15,11 +15,10 @@ answer_router = APIRouter()
 
 @answer_router.post("/")
 async def create_answer(file: UploadFile = File(...), answer_data: str = Form(...)):
-    print(file, type(file))
     try:
         if not file.filename.endswith(".pdf"):
             return JSONResponse(content='{"message": "Only PDF files are allowed."}', status_code=status.HTTP_400_BAD_REQUEST)
-    
+        filename = file.filename
         # Read the uploaded PDF file as bytes
         pdf_data = await file.read()
 
@@ -52,7 +51,7 @@ async def create_answer(file: UploadFile = File(...), answer_data: str = Form(..
                 
     answer_core = AnswerCore()
     try:
-        answer = answer_core.create_answer(validated_answer_data, answer_pdf)
+        answer = answer_core.create_answer(validated_answer_data, answer_pdf, filename=filename)
         return JSONResponse(content=answer, status_code=status.HTTP_200_OK)
     except Exception as error:
         print(error)

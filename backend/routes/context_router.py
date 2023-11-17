@@ -18,7 +18,7 @@ async def create_context(file: UploadFile = File(...), context: str = Form(...))
     try:
         if not file.filename.endswith(".pdf"):
             return JSONResponse(content='{"message": "Only PDF files are allowed."}', status_code=status.HTTP_400_BAD_REQUEST)
-        
+        filename = str(file.filename)
         context_pdf = None
         with tempfile.NamedTemporaryFile(delete=True) as temp_file:
             # Read the content from the uploaded file
@@ -54,7 +54,7 @@ async def create_context(file: UploadFile = File(...), context: str = Form(...))
                 
     context_core = ContextCore()
     try:
-        context = context_core.create_context(validated_context_data, context_pdf)
+        context = context_core.create_context(input=validated_context_data, context_pdf=context_pdf, filename=filename)
         return JSONResponse(content=context, status_code=status.HTTP_200_OK)
     except Exception as error:
         print(error)

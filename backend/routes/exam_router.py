@@ -20,7 +20,7 @@ async def create_new_exam(file: UploadFile = File(...), exam: str = Form(...)):
     try:
         if not file.filename.endswith(".pdf"):
             return JSONResponse(content='{"message": "Only PDF files are allowed."}', status_code=status.HTTP_400_BAD_REQUEST)
-    
+        filename = str(file.filename)
         # Read the uploaded PDF file as bytes
         pdf_data = await file.read()
 
@@ -54,7 +54,7 @@ async def create_new_exam(file: UploadFile = File(...), exam: str = Form(...)):
 
     exam_core = ExamCore()
     try:
-        exam_res = exam_core.create_exam(validated_exam, pdf_text)
+        exam_res = exam_core.create_exam(input=validated_exam, answer_key=pdf_text, filename=filename)
         response = JSONResponse(content=exam_res, status_code=status.HTTP_200_OK)
     except Exception as error:
         print(error)

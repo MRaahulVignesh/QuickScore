@@ -9,9 +9,9 @@ class AnswerDao:
     def __init__(self):
         self.db = postgres_conn.get_db()
 
-    def create_answer(self, student_id: int, exam_id: int, score: float, confidence: float):
+    def create_answer(self, student_id: int, exam_id: int, score: float, confidence: float, filename: str, evaluation_details):
         try:
-            answer = AnswerModel(score=score, student_id=student_id, exam_id=exam_id, confidence=confidence)
+            answer = AnswerModel(score=score, student_id=student_id, exam_id=exam_id, confidence=confidence, evaluation_details=evaluation_details, file_name=filename)
             self.db.add(answer)
             self.db.commit()
             self.db.refresh(answer)
@@ -21,7 +21,7 @@ class AnswerDao:
             raise DuplicateError("Similar Record already exists!")
         except Exception as error:
             print(error)
-            raise DatabaseError("DB operation Failed: Create_Student")
+            raise DatabaseError("DB operation Failed: Create_Answer")
         finally:
             self.db.close()
         return result

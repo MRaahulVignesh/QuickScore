@@ -13,7 +13,7 @@ class ContextCore:
         self.context_dao = ContextDao()
 
     # Create a new context
-    def create_context(self, input: CreateContext, context_pdf = None):
+    def create_context(self, input: CreateContext, filename, context_pdf = None):
         if context_pdf is None:
             raise BadRequestError("Could not parse the pdf")
         uuid_str = str(uuid.uuid4()).replace('-', '')
@@ -22,7 +22,7 @@ class ContextCore:
         vector_db = VectorDB()
         result = vector_db.embed_and_store(context_pdf, context_unique_key)
         if result:
-            context = self.context_dao.create_context(name= input.name, comments=input.comments, context_key=context_unique_key, user_id=input.user_id)
+            context = self.context_dao.create_context(name= input.name, comments=input.comments, context_key=context_unique_key, user_id=input.user_id, filename=filename)
             context = ContextResponse.model_validate(context).model_dump(mode="json")
         else:
             raise ModelError("Could Process the context pdf!")

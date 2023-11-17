@@ -15,3 +15,4 @@ class CreateExam(BaseModel):
 
 class ExamResponse(CreateExam):
     id: int
+    file_name: str
