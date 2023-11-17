@@ -9,17 +9,19 @@ from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 HOST_NAME = "http://localhost:8000"
 
-def create_exams_page():
+def create_exams():
 
     populate_table()
 
     with st.sidebar:
         st.header("Grade Me")
-        if st.button("Exams"):
+        if st.button("Exams", key='exam_exams'):
             rd.go_to_exams()
-        if st.button("Students"):
+        if st.button("Students", key='exam_students'):
             rd.go_to_students()
-        if st.button("Log Out"):
+        if st.button("References", key='exam_references'):
+            rd.go_to_references()
+        if st.button("Log Out", key='exam_logout'):
             rd.go_to_exams()
 
     st.title("Exams")
@@ -153,7 +155,7 @@ def remove_exam(delete_id):
     populate_table()
 
 def add_exam(json_data, file_url):
-    cream_exam_url = HOST_NAME + "/quick-score/exams"
+    create_exam_url = HOST_NAME + "/quick-score/exams"
     
     # with open(file_url, 'rb') as pdf_file:
     multipart_data = MultipartEncoder(
@@ -162,10 +164,20 @@ def add_exam(json_data, file_url):
             'exam': json.dumps(json_data)
         }
     )   
-    print("multipart_data exams= ", multipart_data.to_string())
     headers = {'Content-Type': multipart_data.content_type}  
-    with st.spinner('Uploading exam details...'):
-        response = requests.post(cream_exam_url, data=multipart_data.to_string(), headers=headers)
+    
+    with st.spinner("Uploading exam details..."):
+        st.write("Searching for data...")
+        time.sleep(2)
+        st.write("Found URL.")
+        time.sleep(1)
+        st.write("Processing data...")
+        time.sleep(1)
+
+        response = requests.post(create_exam_url, data=multipart_data.to_string(), headers=headers)
+        
+        # Update the spinner label
+        st.spinner("Document received.")
 
     if response.status_code == 200:
         st.success("Student added successfully.")

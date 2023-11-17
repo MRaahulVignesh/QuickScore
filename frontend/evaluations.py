@@ -16,13 +16,15 @@ if 'show_overlay' not in st.session_state:
     st.session_state.show_overlay = False
 
 def create_evaluations():
-    populate_evaluation_table()
+    st.session_state.evaluation_details = populate_evaluation_table()
     with st.sidebar:
         st.header("Grade Me")
-        if st.button("Exams", key='eval_exam'):
+        if st.button("Exams", key='eval_exams'):
             rd.go_to_exams()
         if st.button("Students", key='eval_students'):
             rd.go_to_students()
+        if st.button("References", key='eval_references'):
+            rd.go_to_references()
         if st.button("Log Out", key='eval_logout'):
             rd.go_to_exams()
 
@@ -71,7 +73,7 @@ def create_evaluations():
 
         # Display column headers
         col_headers = st.columns((1, 2, 1, 1, 1, 1, 0.5, 0.5))
-        headers = ["Serial No", "Student", "Roll No", "Score", "Status", "File Name", "View", "Delete"]
+        headers = ["SNo", "Name", "Roll No", "Score", "Status", "File Name", "View", "Delete"]
         for col_header, header in zip(col_headers, headers):
             col_header.write(header)
 
@@ -79,9 +81,9 @@ def create_evaluations():
         for i, row in df.iterrows():
             cols = st.columns((1, 2, 1, 1, 1, 1, 0.5, 0.5))
             cols[0].write(i + 1) 
-            cols[1].write(row['Student'])
-            cols[2].write(row['Email'])
-            cols[3].write(row['Roll No'])
+            cols[1].write(row['Name'])
+            cols[2].write(row['Roll No'])
+            cols[3].write(row['Score'])
             cols[4].write(row['Status'])
             cols[5].write(row['File Name'])
 
@@ -93,6 +95,7 @@ def create_evaluations():
             # Delete button
             delete_button = cols[7].button('🗑️', key=f"delete_{i}")
             if delete_button:
+                remove_evaluation(row['id'])
                 del st.session_state.evaluation_details[i]
                 st.experimental_rerun()
 
@@ -119,15 +122,15 @@ def populate_evaluation_table():
             print(answer)
             item = {
                         'id': answer["id"],
-                        'Serial No': key+1,
-                        'Name': answer["name"],
-                        'Email': answer["email"],
-                        'Roll number': answer["roll_no"],
-                        # Store uploaded file info or handle file processing here
-                        'Files': 'dummy file'
+                        'SNo': key+1,
+                        'Name': answer["student_name"],
+                        'Roll No': answer["student_roll_no"],
+                        'Score': answer["score"],
+                        'Status': "completed",
+                        'File Name': 'dummy file'
                     }
             modified_answers.append(item)
-        st.session_state.evaluation_details = modified_answers
+        return modified_answers
 
 
 #retrieve student details
@@ -157,22 +160,24 @@ def get_student_details():
     except requests.exceptions.RequestException as e:
         st.error(f"Request failed: {e}")
 
-# def remove_evaluation(delete_id):
-#      # The URL for the API endpoint
-#     exams_get_url = HOST_NAME + "/quick-score/exams/" + str(delete_id)
+def remove_evaluation(delete_id):
+     # The URL for the API endpoint
+    exams_get_url = HOST_NAME + "/quick-score/answers/" + str(delete_id)
 
-#     # Set the appropriate headers for JSON - this is important!
-#     headers = {'Content-Type': 'application/json'}
+    # Set the appropriate headers for JSON - this is important!
+    headers = {'Content-Type': 'application/json'}
 
-#     # Send the POST request
-#     response = requests.delete(exams_get_url, headers=headers)
-#     print(response)
-#     # Check if the request was successful
-#     if response.status_code == 200:
-#         st.experimental_rerun()
-#     else:
-#         print("Error in getting the exam details for the user, ", user_id)
-#     populate_evaluation_table()
+    # Send the POST request
+    response = requests.delete(exams_get_url, headers=headers)
+    print(response)
+    # Check if the request was successful
+    if response.status_code == 200:
+        st.experimental_rerun()
+    else:
+        print("Delete operation failed")
+    st.session_state.evaluation_details = populate_evaluation_table()
+
+
 
 def add_evaluation(json_data, file_url):
     create_evaluation_url = HOST_NAME + "/quick-score/answers"
@@ -184,7 +189,6 @@ def add_evaluation(json_data, file_url):
             'answer_data': json.dumps(json_data)
         }
     )   
-    print("multipart_data = ", multipart_data.to_string())
     headers = {'Content-Type': multipart_data.content_type}  
     with st.spinner('Uploading evaluation details...'):
         response = requests.post(create_evaluation_url, data=multipart_data.to_string(), headers=headers)

@@ -11,16 +11,18 @@ if 'show_overlay' not in st.session_state:
 
 HOST_NAME = "http://localhost:8000"
 
-def create_students_page():
+def create_students():
     populate_students_table()
 
     with st.sidebar:
         st.header("Grade Me")
-        if st.button("Exams"):
+        if st.button("Exams", key='stu_exams'):
             rd.go_to_exams()
-        if st.button("Students"):
+        if st.button("Students", key='stu_students'):
             rd.go_to_students()
-        if st.button("Log Out"):
+        if st.button("References", key='stu_references'):
+            rd.go_to_references()
+        if st.button("Log Out", key='stu_logout'):
             rd.go_to_exams()
 
     st.title("Students")

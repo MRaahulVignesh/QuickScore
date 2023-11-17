@@ -1,25 +1,14 @@
 import streamlit as st
 import redirect as rd
-from students import create_students_page
-from exams import create_exams_page
+from students import create_students
+from exams import create_exams
 from evaluations import create_evaluations
+from references import create_references
 import time
 # import login as login
 # Set the page configuration for the Streamlit app
 st.set_page_config(page_title="GradeMe", layout="wide")
 st.session_state.user_id = 1
-
-#background image test
-page_bg_img = '''
-<style>
-body {
-background-image: url("/Users/devadharshiniravichandranlalitha/Documents/lablab/Cohere grade me/QuickScore/frontend/bg-quick-score.png");
-background-size: cover;
-}
-</style>
-'''
-
-st.markdown(page_bg_img, unsafe_allow_html=True)
 
 # Initialize session state variables outside the function
 if 'uploaded_files' not in st.session_state:
@@ -53,47 +42,61 @@ def custom_button(text, on_click=None):
     """
     st.markdown(button_style, unsafe_allow_html=True)
     return st.button(text, on_click=on_click)
-
+def set_bg_hack_url():
+    '''
+    A function to unpack an image from url and set as bg.
+    Returns
+    -------
+    The background.
+    '''
+        
+    st.markdown(
+         f"""
+         <style>
+         .stApp {{
+             background: url("https://cdn.pixabay.com/photo/2023/11/17/04/25/04-25-52-168_1280.jpg");
+             background-size: cover
+         }}
+         </style>
+         """,
+         unsafe_allow_html=True
+     )
+    
 def create_homepage():
-    st.title("Grade and Respond")
-    st.write("Efficiently grade and provide feedback on student answer papers")
-    # with st.status("Downloading data...", expanded=True) as status:
-    #     st.write("Searching for data...")
-    #     time.sleep(2)
-    #     st.write("Found URL.")
-    #     time.sleep(1)
-    #     st.write("Downloading data...")
-    #     time.sleep(1)
-    #     status.update(label="Download complete!", state="complete", expanded=False)
-    # with st.spinner('Uploading exam details...'):
-    #     time.sleep(25)
-    if custom_button("Get Started", on_click=rd.go_to_exams):
-            pass  # The button click will change the session state to 'upload'
+    set_bg_hack_url()
 
-    st.write("---")
-
-    st.header("Streamline Your Grading Process")
-    st.write("With our website, you can easily grade answer papers and provide comprehensive feedback to students. Save time and effort while ensuring accurate grading.")
-
-    st.write("---")
-
-    # FAQ section
-    st.subheader("FAQ")
-    st.write("Common questions")
+    with st.container():
+        
     
-    # You can use st.expander to create dropdowns for each FAQ
-    faq1 = st.expander("How does the website grade the answer paper?")
-    faq1.write("The website uses an algorithm to analyze the content of the answer paper and assign a grade based on predefined criteria.")
-    
-    faq2 = st.expander("What factors are considered when grading the paper?")
-    faq2.write("The website considers factors such as accuracy, clarity, organization, and use of supporting evidence when grading the paper.")
-    
-    faq3 = st.expander("Can the website provide feedback on specific areas for improvement?")
-    faq3.write("Yes, the website provides detailed feedback on areas where the student can improve their answer, including suggestions for further research or examples to support their arguments.")
-    
-    faq4 = st.expander("Is the grading process automated or manual?")
-    faq4.write("The grading process is automated, but it is designed to mimic the evaluation process of a human grader as closely as possible.")
+        st.title("Grade and Respond")
+        st.write(" Efficiently grade and provide feedback on student answer papers")
+        if custom_button("Get Started", on_click=rd.go_to_exams):
+            pass 
+        
 
+        st.write("---")
+
+        st.header("Streamline Your Grading Process")
+        st.write("With our website, you can easily grade answer papers and provide comprehensive feedback to students. Save time and effort while ensuring accurate grading.")
+
+        st.write("---")
+
+        # FAQ section
+        st.subheader("FAQ")
+        st.write("Common questions")
+        
+        # You can use st.expander to create dropdowns for each FAQ
+        faq1 = st.expander("How does the website grade the answer paper?")
+        faq1.write("The website uses an algorithm to analyze the content of the answer paper and assign a grade based on predefined criteria.")
+        
+        faq2 = st.expander("What factors are considered when grading the paper?")
+        faq2.write("The website considers factors such as accuracy, clarity, organization, and use of supporting evidence when grading the paper.")
+        
+        faq3 = st.expander("Can the website provide feedback on specific areas for improvement?")
+        faq3.write("Yes, the website provides detailed feedback on areas where the student can improve their answer, including suggestions for further research or examples to support their arguments.")
+        
+        faq4 = st.expander("Is the grading process automated or manual?")
+        faq4.write("The grading process is automated, but it is designed to mimic the evaluation process of a human grader as closely as possible.")
 
 
 
@@ -113,8 +116,27 @@ if 'page' not in st.session_state:
 if st.session_state['page'] == 'home':
     create_homepage()
 elif st.session_state['page'] == 'students':
-    create_students_page()
+    create_students()
 elif st.session_state['page'] == 'exams':
-    create_exams_page()
+    create_exams()
 elif st.session_state['page'] == 'evaluations':
     create_evaluations()
+elif st.session_state['page'] == 'references':
+    create_references()
+
+#Display image
+    # local_image_path = "bg.png"
+    # st.image(local_image_path, caption='', use_column_width=True)
+
+
+    #Wormhole image - https://cdn.pixabay.com/photo/2020/06/19/22/33/wormhole-5319067_960_720.jpg
+    # with st.status("Downloading data...", expanded=True) as status:
+    #     st.write("Searching for data...")
+    #     time.sleep(2)
+    #     st.write("Found URL.")
+    #     time.sleep(1)
+    #     st.write("Downloading data...")
+    #     time.sleep(1)
+    #     status.update(label="Download complete!", state="complete", expanded=False)
+    # with st.spinner('Uploading exam details...'):
+    #     time.sleep(25)
