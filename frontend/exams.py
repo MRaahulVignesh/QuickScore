@@ -4,17 +4,58 @@ from evaluations import create_evaluations
 import redirect as rd
 import pandas as pd
 import requests
+import time
 import json
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 HOST_NAME = "http://localhost:8000"
+REFERENCES_LIST = ["No students to display"]  
 
 def create_exams():
 
     populate_table()
+    st.markdown(
+        """
+        <style>
+        .sidebar .sidebar-content {
+            padding-top: 0rem;
+        }
+        .css-18e3th9 {
+            padding: 0.25rem 1rem;
+            text-align: center;
+        }
+        .stButton>button {
+            width: 100%;  /* Make the buttons use the full width */
+            border-radius: 5px;  /* Optional: Rounds the corners of the buttons */
+            margin-bottom: 10px;  /* Adds space between the buttons */
+            background-color: #C0C9CB;
+        }
+        /* Style for profile image */
+        .profile-img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+        }
+        /* Style for welcome message */
+        .welcome-msg {
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            margin-top: 0;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
 
     with st.sidebar:
-        st.header("Grade Me")
+        st.markdown("""
+            <div style="text-align: center;">
+                <img class="profile-img" src="https://i.ibb.co/jrpb6Xd/profile1.png" alt="Profile icon">
+                <p class="welcome-msg">Welcome Author</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
         if st.button("Exams", key='exam_exams'):
             rd.go_to_exams()
         if st.button("Students", key='exam_students'):
@@ -23,7 +64,6 @@ def create_exams():
             rd.go_to_references()
         if st.button("Log Out", key='exam_logout'):
             rd.go_to_exams()
-
     st.title("Exams")
 
     # Button to show the overlay
@@ -32,21 +72,21 @@ def create_exams():
 
     # The overlay layout
     if st.session_state.show_overlay:
+        context_dict = get_references_details()
+        REFERENCES_LIST = list(context_dict.keys())
         with st.container():
             with st.form(key='exam_details_form'):
-                # Input fields
-                # Automatically generate the next serial number
-                serial_no = len(st.session_state.exam_details) + 1
-                # Display the serial number to the user
-                st.write(f"Serial No: {serial_no}")
                 name = st.text_input('Name', key='name')
                 conducted_date = str(st.date_input('Date', value=datetime.today(), key='conducted_date'))
                 description = st.text_input('Description', key='description')
                 total_marks = st.number_input('Total Score', key='total_marks')
-
+                selected_reference = st.selectbox('Select Reference', REFERENCES_LIST, key='references_name')
                 # File uploader
                 uploaded_files = st.file_uploader("Choose a file", accept_multiple_files=False, key='file_uploader')
-
+                if selected_reference is not None:
+                    context_id = context_dict[selected_reference]
+                else:
+                    context_id = None
                 # Submit button for the form
                 submitted = st.form_submit_button('Submit')
                 if submitted:
@@ -55,13 +95,20 @@ def create_exams():
                         "conducted_date": conducted_date,
                         "description": description,
                         "total_marks": total_marks,
-                        "user_id": st.session_state.user_id
+                        "user_id": st.session_state.user_id,
+                        "context_id": context_id
                     }
                     print("json_data = ", json_data)
 
-                    add_exam(json_data, '/Users/devadharshiniravichandranlalitha/Downloads/Question_new.pdf')
+                    add_exam(json_data, '/Users/devadharshiniravichandranlalitha/Downloads/Question.pdf')
                     # Hide the overlay
                     st.session_state.show_overlay = False
+                    st.session_state.pop('name', None)
+                    st.session_state.pop('conducted_date', None)
+                    st.session_state.pop('description', None)
+                    st.session_state.pop('total_marks', None)
+                    st.session_state.pop('context_id', None)
+                    st.experimental_rerun()
 
     # Display the table of exam details with 'Edit', 'View', and 'Delete' buttons
     if st.session_state.exam_details:
@@ -71,7 +118,7 @@ def create_exams():
 
         # Display column headers
         col_headers = st.columns((1, 1, 1, 1, 1, 1, 0.5, 0.5, 0.5))
-        headers = ["Serial No", "Name", "Date", "Description", "Total Score", "Files", "View", "Edit", "Delete"]
+        headers = ["S.No", "Name", "Date", "Description", "Total Score", "Files", "View", "Edit", "Delete"]
         for col_header, header in zip(col_headers, headers):
             col_header.write(header)
 
@@ -79,11 +126,11 @@ def create_exams():
         for i, row in df.iterrows():
             exam_id = row['id']
             cols = st.columns((1, 1, 1, 1, 1, 1, 0.5, 0.5, 0.5))
-            cols[0].write(i + 1)  # Adjust index if necessary
+            cols[0].write(str(i + 1))
             cols[1].write(row['Name'])
             cols[2].write(row['Date'])  # Format the date
             cols[3].write(row['Description'])
-            cols[4].write(row['Total Score'])
+            cols[4].write(str(row['Total Score']))
             cols[5].write(row['Files'])
 
             # View button (you'll need to implement what 'View' should do)
@@ -126,7 +173,7 @@ def populate_table():
             print(exam)
             item = {
                         'id': exam["id"],
-                        'Serial No': key+1,
+                        'S.No': key+1,
                         'Name': exam["name"],
                         'Date': exam["conducted_date"],
                         'Description': exam["description"],
@@ -136,7 +183,28 @@ def populate_table():
                     }
             modified_exams.append(item)
         st.session_state.exam_details = modified_exams
+def get_references_details():
+    references_get_url = HOST_NAME + "/quick-score/context"
+    query_params = {
+        'user_id': st.session_state.user_id
+    }
+    headers = {'Content-Type': 'application/json'}
+    try:
+        response = requests.get(references_get_url, params=query_params, headers=headers)
+        if response.status_code == 200:
+            reference_result = response.json()
 
+            reference_dictionary = {}
+            for reference in reference_result:
+                key = reference['name']
+                value = reference['id']
+                reference_dictionary[key] = value
+            return reference_dictionary
+        
+        else:
+            st.error(f"Error: {response.status_code}")
+    except requests.exceptions.RequestException as e:
+        st.error(f"Request failed: {e}")
 def remove_exam(delete_id):
      # The URL for the API endpoint
     exams_get_url = HOST_NAME + "/quick-score/exams/" + str(delete_id)
@@ -153,7 +221,6 @@ def remove_exam(delete_id):
     else:
         print("Error in getting the exam details for the user, ", user_id)
     populate_table()
-
 def add_exam(json_data, file_url):
     create_exam_url = HOST_NAME + "/quick-score/exams"
     
@@ -173,10 +240,7 @@ def add_exam(json_data, file_url):
         time.sleep(1)
         st.write("Processing data...")
         time.sleep(1)
-
         response = requests.post(create_exam_url, data=multipart_data.to_string(), headers=headers)
-        
-        # Update the spinner label
         st.spinner("Document received.")
 
     if response.status_code == 200:
@@ -186,4 +250,3 @@ def add_exam(json_data, file_url):
     else:
         print("response json=", response.json())
         st.error(f"Failed to add exam. Status code: {response.status_code}")
-

@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 import requests
 import json
+import time
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 HOST_NAME = "http://localhost:8000"
@@ -17,8 +18,47 @@ if 'show_overlay' not in st.session_state:
 
 def create_evaluations():
     st.session_state.evaluation_details = populate_evaluation_table()
+    st.markdown(
+        """
+        <style>
+        .sidebar .sidebar-content {
+            padding-top: 0rem;
+        }
+        .css-18e3th9 {
+            padding: 0.25rem 1rem;
+            text-align: center;
+        }
+        .stButton>button {
+            width: 100%;  /* Make the buttons use the full width */
+            border-radius: 5px;  /* Optional: Rounds the corners of the buttons */
+            margin-bottom: 10px;  /* Adds space between the buttons */
+            background-color: #C0C9CB;
+        }
+        /* Style for profile image */
+        .profile-img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+        }
+        /* Style for welcome message */
+        .welcome-msg {
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            margin-top: 0;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
     with st.sidebar:
-        st.header("Grade Me")
+        st.markdown("""
+            <div style="text-align: center;">
+                <img class="profile-img" src="https://i.ibb.co/jrpb6Xd/profile1.png" alt="Profile icon">
+                <p class="welcome-msg">Welcome Author</p>
+            </div>
+            """, unsafe_allow_html=True)
         if st.button("Exams", key='eval_exams'):
             rd.go_to_exams()
         if st.button("Students", key='eval_students'):
@@ -64,6 +104,7 @@ def create_evaluations():
                     #     'File Name': uploaded_file.name
                     # })
                     st.session_state.show_overlay = False
+                    st.experimental_rerun()
         
 
     #Display the table of exam details
@@ -72,18 +113,18 @@ def create_evaluations():
         df = pd.DataFrame(st.session_state.evaluation_details)
 
         # Display column headers
-        col_headers = st.columns((1, 2, 1, 1, 1, 1, 0.5, 0.5))
+        col_headers = st.columns((1, 1, 1, 1, 1, 1, 0.5, 0.5))
         headers = ["SNo", "Name", "Roll No", "Score", "Status", "File Name", "View", "Delete"]
         for col_header, header in zip(col_headers, headers):
             col_header.write(header)
 
         # Iterate over the DataFrame to display the table with buttons
         for i, row in df.iterrows():
-            cols = st.columns((1, 2, 1, 1, 1, 1, 0.5, 0.5))
-            cols[0].write(i + 1) 
+            cols = st.columns((1, 1, 1, 1, 1, 1, 0.5, 0.5))
+            cols[0].write(str(i + 1)) 
             cols[1].write(row['Name'])
             cols[2].write(row['Roll No'])
-            cols[3].write(row['Score'])
+            cols[3].write(str(row['Score']))
             cols[4].write(row['Status'])
             cols[5].write(row['File Name'])
 
@@ -190,8 +231,16 @@ def add_evaluation(json_data, file_url):
         }
     )   
     headers = {'Content-Type': multipart_data.content_type}  
-    with st.spinner('Uploading evaluation details...'):
+    with st.spinner("Uploading evaluation details..."):
+        st.write("Searching for data...")
+        time.sleep(2)
+        st.write("Found URL.")
+        time.sleep(1)
+        st.write("Processing data...")
+        time.sleep(1)
         response = requests.post(create_evaluation_url, data=multipart_data.to_string(), headers=headers)
+        st.spinner("Document received.")
+        
     if response.status_code == 200:
         st.success("answer added successfully.")
         # Optionally, rerun to refresh the data

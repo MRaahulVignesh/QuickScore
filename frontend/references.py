@@ -3,6 +3,9 @@ import redirect as rd
 import pandas as pd
 from datetime import datetime
 import requests
+import json
+import time
+from requests_toolbelt.multipart.encoder import MultipartEncoder
 
 if 'reference_details' not in st.session_state:
     st.session_state.reference_details = []
@@ -12,10 +15,49 @@ if 'show_overlay' not in st.session_state:
 HOST_NAME = "http://localhost:8000"
 
 def create_references():
-    # populate_references_table()
+    populate_references_table()
+    st.markdown(
+        """
+        <style>
+        .sidebar .sidebar-content {
+            padding-top: 0rem;
+        }
+        .css-18e3th9 {
+            padding: 0.25rem 1rem;
+            text-align: center;
+        }
+        .stButton>button {
+            width: 100%;  /* Make the buttons use the full width */
+            border-radius: 5px;  /* Optional: Rounds the corners of the buttons */
+            margin-bottom: 10px;  /* Adds space between the buttons */
+            background-color: #C0C9CB;
+        }
+        /* Style for profile image */
+        .profile-img {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+        }
+        /* Style for welcome message */
+        .welcome-msg {
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            margin-top: 0;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
 
     with st.sidebar:
-        st.header("Grade Me")
+        st.markdown("""
+            <div style="text-align: center;">
+                <img class="profile-img" src="https://i.ibb.co/jrpb6Xd/profile1.png" alt="Profile icon">
+                <p class="welcome-msg">Welcome Author</p>
+            </div>
+            """, unsafe_allow_html=True)
         if st.button("Exams", key='ref_exams'):
             rd.go_to_exams()
         if st.button("Students", key='ref_students'):
@@ -43,10 +85,6 @@ def create_references():
     if st.session_state.show_overlay:
         with st.container():
             with st.form(key='reference_details_form'):
-                # Automatically generate the next serial number
-                serial_no = len(st.session_state.reference_details) + 1
-                # Display the serial number to the user
-                st.write(f"Serial No: {serial_no}")
                 
                 # New fields: name, comments, and file uploader
                 name = st.text_input('Name', key='name')
@@ -57,13 +95,14 @@ def create_references():
                 submitted = st.form_submit_button('Submit')
                 if submitted:
                     # Call the function to add a reference with name, comments, and file name
-                    add_reference(name, comments, uploaded_file)
+                    add_reference(name, comments, '/Users/devadharshiniravichandranlalitha/Downloads/Question.pdf')
                     # Hide the overlay
                     st.session_state.show_overlay = False
                     # Clear the session state keys if needed
                     st.session_state.pop('name', None)
                     st.session_state.pop('comments', None)
                     st.session_state.pop('file_uploader', None)
+                    st.experimental_rerun()
 
     # Display the table of reference details with 'View', 'Edit', and 'Delete' buttons
     if st.session_state.reference_details:
@@ -72,27 +111,29 @@ def create_references():
         df = pd.DataFrame(st.session_state.reference_details)
 
         # Display column headers
-        col_headers = st.columns((1, 2, 2, 2, 2, 1, 1))
-        headers = ["Serial No", "Name", "Comments", "File Name", "Action"]
+        col_headers = st.columns((1, 1, 1, 1, 1))
+        headers = ["S.No", "Name", "Comments", "File Name", "Delete"]
         for col_header, header in zip(col_headers, headers):
             col_header.write(header)
 
         # Iterate over the DataFrame to display the table with buttons
         for i, row in df.iterrows():
-            reference_id = row["reference_id"]
-            cols = st.columns((1, 2, 2, 2, 2, 1, 1))
-            cols[0].write(row['Serial No'])
+            reference_id = row["id"]
+            cols = st.columns((1, 1, 1, 1, 1))
+            cols[0].write(str(row['S.No']))
             cols[1].write(row['Name'])
             cols[2].write(row['Comments'])
             cols[3].write(row['File Name'])
-            if cols[4].button('Delete', key=reference_id):
+            if cols[4].button('🗑️', key=reference_id):
                 delete_reference(reference_id)
                 st.experimental_rerun()
-                
+
+
+
 def populate_references_table():
 
     # The URL for the API endpoint
-    references_get_url = HOST_NAME + "/quick-score/references"
+    references_get_url = HOST_NAME + "/quick-score/context"
     query_params = {
         'user_id': st.session_state.user_id
     }
@@ -107,17 +148,16 @@ def populate_references_table():
         st.error(f"Request failed: {e}")
         reference_result = []
         
-
     modified_references = []
     if len(reference_result) > 0:
         for key, reference in enumerate(reference_result):
             print(reference)
             item = {
-                        'Serial No': key + 1,
+                        'S.No': key + 1,
                         'Name': reference["name"],
-                        'Email': reference["email"],
-                        'Roll Number': reference["roll_no"],
-                        'reference_id': reference["id"]
+                        'Comments': reference["comments"],
+                        'File Name': 'test file',
+                        'id': reference["id"]
                     }
             modified_references.append(item)
         st.session_state.reference_details = modified_references
@@ -125,7 +165,7 @@ def populate_references_table():
 def delete_reference(reference_id):
 
     # The URL for the API endpoint
-    reference_delete_url = HOST_NAME + "/quick-score/references/" + str(reference_id) 
+    reference_delete_url = HOST_NAME + "/quick-score/context/" + str(reference_id) 
 
     # Set the appropriate headers for JSON - this is important!
     headers = {'Content-Type': 'application/json'}
@@ -136,33 +176,46 @@ def delete_reference(reference_id):
     # Check if the request was successful
     if response.status_code == 200:
         st.session_state.reference_details = [
-            reference for reference in st.session_state.reference_details if reference['reference_id'] != reference_id
+            reference for reference in st.session_state.reference_details if reference['id'] != reference_id
         ]
         st.experimental_rerun()
     else:
         print(f"Failed to delete reference record. Status code: {response.status_code}")
 
-def add_reference(name, email, roll_number):
-    # The URL for the API endpoint to add a reference
-    reference_add_url = HOST_NAME + "/quick-score/references" 
-
-    # The data you want to send with the POST request
+def add_reference(name, comments, file_url):
     reference_data = {
         'name': name,
-        'email': email,
-        'roll_no': roll_number,
+        'comments': comments,
         'user_id': st.session_state.user_id
     }
+    print("reference_data=", reference_data)
+    add_references_function(reference_data, file_url)
 
-    # Set the appropriate headers for JSON
-    headers = {'Content-Type': 'application/json'}
+def add_references_function(json_data, file_url):
+    create_ref_url = HOST_NAME + "/quick-score/context"
+    
+    # with open(file_url, 'rb') as pdf_file:
+    multipart_data = MultipartEncoder(
+        fields = {
+            'file': ('answerkey.pdf', open(file_url, 'rb'), 'application/pdf'),
+            'context': json.dumps(json_data)
+        }
+    )   
+    headers = {'Content-Type': multipart_data.content_type}  
+    
+    with st.spinner("Uploading reference details..."):
+        st.write("Searching for data...")
+        time.sleep(2)
+        st.write("Found URL.")
+        time.sleep(1)
+        st.write("Processing data...")
+        time.sleep(1)
+        response = requests.post(create_ref_url, data=multipart_data.to_string(), headers=headers)
+        st.spinner("Document received.")
 
-    # Send the POST request
-    response = requests.post(reference_add_url, json=reference_data, headers=headers)
-
-    # Check if the request was successful
     if response.status_code == 200:
         st.success("Reference added successfully.")
         st.experimental_rerun()
     else:
+        print("response json=", response.json())
         st.error(f"Failed to add reference. Status code: {response.status_code}")

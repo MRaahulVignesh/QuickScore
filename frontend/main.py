@@ -5,31 +5,26 @@ from exams import create_exams
 from evaluations import create_evaluations
 from references import create_references
 import time
-# import login as login
-# Set the page configuration for the Streamlit app
+import login as login
+
 st.set_page_config(page_title="GradeMe", layout="wide")
 st.session_state.user_id = 1
 
 # Initialize session state variables outside the function
+if 'page' not in st.session_state:
+    st.session_state['page'] = 'home'
 if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = []
-
 if 'exam_details' not in st.session_state:
     st.session_state.exam_details = []
 if 'show_overlay' not in st.session_state:
     st.session_state.show_overlay = False
-# Initialize session state for page navigation
 
-# if 'uploaded_files' not in st.session_state:
-#     st.session_state['uploaded_files'] = []
-
-
-# Function to create a custom button with Streamlit
-def custom_button(text, on_click=None):
+def custom_button(text, on_click=None, key=None):
     button_style = """
         <style>
             div.stButton > button:first-child {
-                background-color: #009688;
+                background-color: #0095ee;
                 color: white;
                 height: 3em;
                 border-radius: 5px;
@@ -41,15 +36,9 @@ def custom_button(text, on_click=None):
         </style>
     """
     st.markdown(button_style, unsafe_allow_html=True)
-    return st.button(text, on_click=on_click)
+    return st.button(text, on_click=on_click, key=key)
+
 def set_bg_hack_url():
-    '''
-    A function to unpack an image from url and set as bg.
-    Returns
-    -------
-    The background.
-    '''
-        
     st.markdown(
          f"""
          <style>
@@ -63,17 +52,14 @@ def set_bg_hack_url():
      )
     
 def create_homepage():
-    set_bg_hack_url()
+    # set_bg_hack_url()
 
     with st.container():
-        
-    
         st.title("Grade and Respond")
         st.write(" Efficiently grade and provide feedback on student answer papers")
-        if custom_button("Get Started", on_click=rd.go_to_exams):
-            pass 
+        if custom_button("Login", on_click=rd.go_to_exams, key="custom_login"):
+            pass
         
-
         st.write("---")
 
         st.header("Streamline Your Grading Process")
@@ -102,16 +88,12 @@ def create_homepage():
 
 
 # Main app logic
-#login page deactivated for testing purposes
-# if 'page' not in st.session_state:
-#         st.session_state['page'] = 'login'
-# if st.session_state['page'] == 'login':
-#     login.login_page()
-# elif st.session_state['page'] == 'signup':
-#     login.signup_page() 
+# login page deactivated for testing purposes
+if st.session_state['page'] == 'login':
+    login.login_page()
+elif st.session_state['page'] == 'signup':
+    login.signup_page() 
 
-if 'page' not in st.session_state:
-    st.session_state['page'] = 'home'
 
 if st.session_state['page'] == 'home':
     create_homepage()
@@ -130,13 +112,3 @@ elif st.session_state['page'] == 'references':
 
 
     #Wormhole image - https://cdn.pixabay.com/photo/2020/06/19/22/33/wormhole-5319067_960_720.jpg
-    # with st.status("Downloading data...", expanded=True) as status:
-    #     st.write("Searching for data...")
-    #     time.sleep(2)
-    #     st.write("Found URL.")
-    #     time.sleep(1)
-    #     st.write("Downloading data...")
-    #     time.sleep(1)
-    #     status.update(label="Download complete!", state="complete", expanded=False)
-    # with st.spinner('Uploading exam details...'):
-    #     time.sleep(25)
