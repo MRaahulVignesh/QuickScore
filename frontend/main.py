@@ -4,10 +4,12 @@ from students import create_students
 from exams import create_exams
 from evaluations import create_evaluations
 from references import create_references
+from individual import create_individual_evaluation_page
 import time
 import login as login
 
 st.set_page_config(page_title="GradeMe", layout="wide")
+
 st.session_state.user_id = 1
 
 # Initialize session state variables outside the function
@@ -57,7 +59,7 @@ def create_homepage():
     with st.container():
         st.title("Grade and Respond")
         st.write(" Efficiently grade and provide feedback on student answer papers")
-        if custom_button("Login", on_click=rd.go_to_exams, key="custom_login"):
+        if custom_button("Login", on_click=rd.go_to_login, key="custom_login"):
             pass
         
         st.write("---")
@@ -105,6 +107,8 @@ elif st.session_state['page'] == 'evaluations':
     create_evaluations()
 elif st.session_state['page'] == 'references':
     create_references()
+elif st.session_state['page'] == 'individual':
+    create_individual_evaluation_page()
 
 #Display image
     # local_image_path = "bg.png"

@@ -3,6 +3,7 @@ import redirect as rd
 import pandas as pd
 from datetime import datetime
 import requests
+from side_bar import render_side_bar
 
 if 'student_details' not in st.session_state:
     st.session_state.student_details = []
@@ -13,55 +14,7 @@ HOST_NAME = "http://localhost:8000"
 
 def create_students():
     populate_students_table()
-    st.markdown(
-        """
-        <style>
-        .sidebar .sidebar-content {
-            padding-top: 0rem;
-        }
-        .css-18e3th9 {
-            padding: 0.25rem 1rem;
-            text-align: center;
-        }
-        .stButton>button {
-            width: 100%;  /* Make the buttons use the full width */
-            border-radius: 5px;  /* Optional: Rounds the corners of the buttons */
-            margin-bottom: 10px;  /* Adds space between the buttons */
-            background-color: #C0C9CB;
-        }
-        /* Style for profile image */
-        .profile-img {
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-        }
-        /* Style for welcome message */
-        .welcome-msg {
-            color: white;
-            font-weight: bold;
-            font-size: 24px;
-            margin-top: 0;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    with st.sidebar:
-        st.markdown("""
-            <div style="text-align: center;">
-                <img class="profile-img" src="https://i.ibb.co/jrpb6Xd/profile1.png" alt="Profile icon">
-                <p class="welcome-msg">Welcome Author</p>
-            </div>
-            """, unsafe_allow_html=True)
-        if st.button("Exams", key='stu_exams'):
-            rd.go_to_exams()
-        if st.button("Students", key='stu_students'):
-            rd.go_to_students()
-        if st.button("References", key='stu_references'):
-            rd.go_to_references()
-        if st.button("Log Out", key='stu_logout'):
-            rd.go_to_exams()
+    render_side_bar()    
 
     st.title("Students")
 
@@ -73,12 +26,7 @@ def create_students():
     if 'show_overlay' not in st.session_state:
         st.session_state.show_overlay = False
 
-    # Button to show the overlay
-    if st.button('Upload Student Details'):
-        st.session_state.show_overlay = True
-
-    # The overlay layout
-    if st.session_state.show_overlay:
+    with st.expander("Upload Student Details"):
         with st.container():
             with st.form(key='student_details_form'):
                 name = st.text_input('Name', key='name')
@@ -97,7 +45,7 @@ def create_students():
 
     # Display the table of student details with 'View', 'Edit', and 'Delete' buttons
     if st.session_state.student_details:
-        st.write('Student Details:')
+        st.markdown("<br>", unsafe_allow_html=True)
         # Create a DataFrame for the table
         df = pd.DataFrame(st.session_state.student_details)
 
@@ -105,7 +53,7 @@ def create_students():
         col_headers = st.columns((1, 1, 1, 1, 0.5, 0.5))
         headers = ["S.No", "Name", "Email", "Roll Number", "Edit", "Delete"]
         for col_header, header in zip(col_headers, headers):
-            col_header.write(header)
+            col_header.markdown(f'<h5 style="color: #4F8BF9;"><strong>{header}</strong></h5></div>', unsafe_allow_html=True)
 
         # Iterate over the DataFrame to display the table with buttons
         for i, row in df.iterrows():

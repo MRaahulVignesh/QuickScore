@@ -5,75 +5,30 @@ import redirect as rd
 import pandas as pd
 import requests
 import time
+from components.button import custom_button
+from css.input import input_css
+from side_bar import render_side_bar
 import json
 from requests_toolbelt.multipart.encoder import MultipartEncoder
+
 
 HOST_NAME = "http://localhost:8000"
 REFERENCES_LIST = ["No students to display"]  
 
 def create_exams():
-
+    input_css()
     populate_table()
-    st.markdown(
-        """
-        <style>
-        .sidebar .sidebar-content {
-            padding-top: 0rem;
-        }
-        .css-18e3th9 {
-            padding: 0.25rem 1rem;
-            text-align: center;
-        }
-        .stButton>button {
-            width: 100%;  /* Make the buttons use the full width */
-            border-radius: 5px;  /* Optional: Rounds the corners of the buttons */
-            margin-bottom: 10px;  /* Adds space between the buttons */
-            background-color: #C0C9CB;
-        }
-        /* Style for profile image */
-        .profile-img {
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-        }
-        /* Style for welcome message */
-        .welcome-msg {
-            color: white;
-            font-weight: bold;
-            font-size: 24px;
-            margin-top: 0;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    with st.sidebar:
-        st.markdown("""
-            <div style="text-align: center;">
-                <img class="profile-img" src="https://i.ibb.co/jrpb6Xd/profile1.png" alt="Profile icon">
-                <p class="welcome-msg">Welcome Author</p>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        if st.button("Exams", key='exam_exams'):
-            rd.go_to_exams()
-        if st.button("Students", key='exam_students'):
-            rd.go_to_students()
-        if st.button("References", key='exam_references'):
-            rd.go_to_references()
-        if st.button("Log Out", key='exam_logout'):
-            rd.go_to_exams()
+    render_side_bar()
     st.title("Exams")
 
-    # Button to show the overlay
-    if st.button('Upload Exam Details'):
-        st.session_state.show_overlay = True
+    # # Button to show the overlay
+    # if custom_button("Upload Exam Details!", "btn1", "background-color: blue; color: white; border-radius: 5px; border: none; padding: 10px 20px;"):
+    #     st.session_state.show_overlay = True
 
     # The overlay layout
-    if st.session_state.show_overlay:
-        context_dict = get_references_details()
-        REFERENCES_LIST = list(context_dict.keys())
+    context_dict = get_references_details()
+    REFERENCES_LIST = list(context_dict.keys())
+    with st.expander("Upload Exam Details"):
         with st.container():
             with st.form(key='exam_details_form'):
                 name = st.text_input('Name', key='name')
@@ -100,7 +55,7 @@ def create_exams():
                     }
                     print("json_data = ", json_data)
 
-                    add_exam(json_data, '/Users/devadharshiniravichandranlalitha/Downloads/Question.pdf')
+                    add_exam(json_data, uploaded_files)
                     # Hide the overlay
                     st.session_state.show_overlay = False
                     st.session_state.pop('name', None)
@@ -112,7 +67,7 @@ def create_exams():
 
     # Display the table of exam details with 'Edit', 'View', and 'Delete' buttons
     if st.session_state.exam_details:
-        st.write('Exam Details:')
+        st.markdown("<br>", unsafe_allow_html=True)
         # Create a DataFrame for the table
         df = pd.DataFrame(st.session_state.exam_details)
 
@@ -120,7 +75,7 @@ def create_exams():
         col_headers = st.columns((1, 1, 1, 1, 1, 1, 0.5, 0.5, 0.5))
         headers = ["S.No", "Name", "Date", "Description", "Total Score", "Files", "View", "Edit", "Delete"]
         for col_header, header in zip(col_headers, headers):
-            col_header.write(header)
+            col_header.markdown(f'<h5 style="color: #4F8BF9;"><strong>{header}</strong></h5></div>', unsafe_allow_html=True)
 
         # Iterate over the DataFrame to display the table with buttons
         for i, row in df.iterrows():
@@ -179,7 +134,7 @@ def populate_table():
                         'Description': exam["description"],
                         'Total Score': exam["total_marks"],
                         # Store uploaded file info or handle file processing here
-                        'Files': 'dummy file'
+                        'Files': exam["file_name"]
                     }
             modified_exams.append(item)
         st.session_state.exam_details = modified_exams
@@ -221,25 +176,21 @@ def remove_exam(delete_id):
     else:
         print("Error in getting the exam details for the user, ", user_id)
     populate_table()
-def add_exam(json_data, file_url):
+def add_exam(json_data, file_upload):
+
     create_exam_url = HOST_NAME + "/quick-score/exams"
     
     # with open(file_url, 'rb') as pdf_file:
     multipart_data = MultipartEncoder(
         fields = {
-            'file': ('answerkey.pdf', open(file_url, 'rb'), 'application/pdf'),
+            # 'file': ('answerkey.pdf', open(file_url, 'rb'), 'application/pdf'),
+            'file': (file_upload.name, file_upload.getvalue(), 'application/pdf'),
             'exam': json.dumps(json_data)
         }
     )   
     headers = {'Content-Type': multipart_data.content_type}  
     
     with st.spinner("Uploading exam details..."):
-        st.write("Searching for data...")
-        time.sleep(2)
-        st.write("Found URL.")
-        time.sleep(1)
-        st.write("Processing data...")
-        time.sleep(1)
         response = requests.post(create_exam_url, data=multipart_data.to_string(), headers=headers)
         st.spinner("Document received.")
 

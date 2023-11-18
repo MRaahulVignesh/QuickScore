@@ -6,6 +6,7 @@ import requests
 import json
 import time
 from requests_toolbelt.multipart.encoder import MultipartEncoder
+from side_bar import render_side_bar
 
 HOST_NAME = "http://localhost:8000"
 STUDENTS_LIST = ["No students to display"] 
@@ -18,63 +19,12 @@ if 'show_overlay' not in st.session_state:
 
 def create_evaluations():
     st.session_state.evaluation_details = populate_evaluation_table()
-    st.markdown(
-        """
-        <style>
-        .sidebar .sidebar-content {
-            padding-top: 0rem;
-        }
-        .css-18e3th9 {
-            padding: 0.25rem 1rem;
-            text-align: center;
-        }
-        .stButton>button {
-            width: 100%;  /* Make the buttons use the full width */
-            border-radius: 5px;  /* Optional: Rounds the corners of the buttons */
-            margin-bottom: 10px;  /* Adds space between the buttons */
-            background-color: #C0C9CB;
-        }
-        /* Style for profile image */
-        .profile-img {
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-        }
-        /* Style for welcome message */
-        .welcome-msg {
-            color: white;
-            font-weight: bold;
-            font-size: 24px;
-            margin-top: 0;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-    with st.sidebar:
-        st.markdown("""
-            <div style="text-align: center;">
-                <img class="profile-img" src="https://i.ibb.co/jrpb6Xd/profile1.png" alt="Profile icon">
-                <p class="welcome-msg">Welcome Author</p>
-            </div>
-            """, unsafe_allow_html=True)
-        if st.button("Exams", key='eval_exams'):
-            rd.go_to_exams()
-        if st.button("Students", key='eval_students'):
-            rd.go_to_students()
-        if st.button("References", key='eval_references'):
-            rd.go_to_references()
-        if st.button("Log Out", key='eval_logout'):
-            rd.go_to_exams()
+    render_side_bar()
+    
 
     st.title("Evaluations")
 
-    # Button to show the overlay
-    if st.button('Upload Evaluation Details'):
-        st.session_state.show_overlay = True
-
-    if st.session_state.show_overlay:
+    with st.expander("Upload Evaluation Details"):
         student_dict = get_student_details()
         STUDENTS_LIST = list(student_dict.keys())
         with st.container():
@@ -94,7 +44,7 @@ def create_evaluations():
                         'exam_id': st.session_state.exam_id,
                         'student_id': student_dict[selected_student]
                     }
-                    add_evaluation(json_data, '/Users/devadharshiniravichandranlalitha/Downloads/Question.pdf')
+                    add_evaluation(json_data, uploaded_file)
                     # st.session_state.evaluation_details.append({
                     #     # 'Serial No': serial_no,
                     #     'Student Name': student_name,
@@ -109,14 +59,14 @@ def create_evaluations():
 
     #Display the table of exam details
     if st.session_state.evaluation_details:
-        st.write('Evaluation Details:')
+        st.markdown("<br>", unsafe_allow_html=True)
         df = pd.DataFrame(st.session_state.evaluation_details)
 
         # Display column headers
         col_headers = st.columns((1, 1, 1, 1, 1, 1, 0.5, 0.5))
         headers = ["SNo", "Name", "Roll No", "Score", "Status", "File Name", "View", "Delete"]
         for col_header, header in zip(col_headers, headers):
-            col_header.write(header)
+            col_header.markdown(f'<h5 style="color: #4F8BF9;"><strong>{header}</strong></h5></div>', unsafe_allow_html=True)
 
         # Iterate over the DataFrame to display the table with buttons
         for i, row in df.iterrows():
@@ -131,7 +81,7 @@ def create_evaluations():
             # View button (implement functionality as needed)
             view_button = cols[6].button('👁️', key=f"view_{i}")
             if view_button:
-                pass
+                view_evaluation(row['id'])
 
             # Delete button
             delete_button = cols[7].button('🗑️', key=f"delete_{i}")
@@ -168,7 +118,7 @@ def populate_evaluation_table():
                         'Roll No': answer["student_roll_no"],
                         'Score': answer["score"],
                         'Status': "completed",
-                        'File Name': 'dummy file'
+                        'File Name': answer["file_name"]
                     }
             modified_answers.append(item)
         return modified_answers
@@ -220,26 +170,19 @@ def remove_evaluation(delete_id):
 
 
 
-def add_evaluation(json_data, file_url):
+def add_evaluation(json_data, file_upload):
     create_evaluation_url = HOST_NAME + "/quick-score/answers"
     
     # with open(file_url, 'rb') as pdf_file:
     multipart_data = MultipartEncoder(
         fields = {
-            'file': ('answerkey.pdf', open(file_url, 'rb'), 'application/pdf'),
+            'file': (file_upload.name, file_upload.getvalue(), 'application/pdf'),
             'answer_data': json.dumps(json_data)
         }
     )   
     headers = {'Content-Type': multipart_data.content_type}  
     with st.spinner("Uploading evaluation details..."):
-        st.write("Searching for data...")
-        time.sleep(2)
-        st.write("Found URL.")
-        time.sleep(1)
-        st.write("Processing data...")
-        time.sleep(1)
         response = requests.post(create_evaluation_url, data=multipart_data.to_string(), headers=headers)
-        st.spinner("Document received.")
         
     if response.status_code == 200:
         st.success("answer added successfully.")
@@ -248,3 +191,8 @@ def add_evaluation(json_data, file_url):
     else:
         # print("response json=", response.json())
         st.error(f"Failed to add answer. Status code: {response.status_code}")
+        
+def view_evaluation(_id):
+    print("hello")
+    st.session_state.evaluation_id = _id
+    rd.go_to_individual_evaluation()

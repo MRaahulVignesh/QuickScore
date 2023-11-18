@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime
 import requests
 import json
+from side_bar import render_side_bar
 import time
 from requests_toolbelt.multipart.encoder import MultipartEncoder
 
@@ -16,56 +17,7 @@ HOST_NAME = "http://localhost:8000"
 
 def create_references():
     populate_references_table()
-    st.markdown(
-        """
-        <style>
-        .sidebar .sidebar-content {
-            padding-top: 0rem;
-        }
-        .css-18e3th9 {
-            padding: 0.25rem 1rem;
-            text-align: center;
-        }
-        .stButton>button {
-            width: 100%;  /* Make the buttons use the full width */
-            border-radius: 5px;  /* Optional: Rounds the corners of the buttons */
-            margin-bottom: 10px;  /* Adds space between the buttons */
-            background-color: #C0C9CB;
-        }
-        /* Style for profile image */
-        .profile-img {
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-        }
-        /* Style for welcome message */
-        .welcome-msg {
-            color: white;
-            font-weight: bold;
-            font-size: 24px;
-            margin-top: 0;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-
-    with st.sidebar:
-        st.markdown("""
-            <div style="text-align: center;">
-                <img class="profile-img" src="https://i.ibb.co/jrpb6Xd/profile1.png" alt="Profile icon">
-                <p class="welcome-msg">Welcome Author</p>
-            </div>
-            """, unsafe_allow_html=True)
-        if st.button("Exams", key='ref_exams'):
-            rd.go_to_exams()
-        if st.button("Students", key='ref_students'):
-            rd.go_to_students()
-        if st.button("References", key='ref_references'):
-            rd.go_to_references()
-        if st.button("Log Out", key='ref_logout'):
-            rd.go_to_exams()
+    render_side_bar()
 
     st.title("References")
 
@@ -77,12 +29,8 @@ def create_references():
     if 'show_overlay' not in st.session_state:
         st.session_state.show_overlay = False
 
-    # Button to show the overlay
-    if st.button('Upload Reference Details'):
-        st.session_state.show_overlay = True
-
     # The overlay layout
-    if st.session_state.show_overlay:
+    with st.expander("Upload Reference Details"):
         with st.container():
             with st.form(key='reference_details_form'):
                 
@@ -95,7 +43,7 @@ def create_references():
                 submitted = st.form_submit_button('Submit')
                 if submitted:
                     # Call the function to add a reference with name, comments, and file name
-                    add_reference(name, comments, '/Users/devadharshiniravichandranlalitha/Downloads/Question.pdf')
+                    add_reference(name, comments, uploaded_file)
                     # Hide the overlay
                     st.session_state.show_overlay = False
                     # Clear the session state keys if needed
@@ -106,7 +54,8 @@ def create_references():
 
     # Display the table of reference details with 'View', 'Edit', and 'Delete' buttons
     if st.session_state.reference_details:
-        st.write('Reference Details:')
+
+        st.markdown("<br>", unsafe_allow_html=True)
         # Create a DataFrame for the table
         df = pd.DataFrame(st.session_state.reference_details)
 
@@ -114,7 +63,8 @@ def create_references():
         col_headers = st.columns((1, 1, 1, 1, 1))
         headers = ["S.No", "Name", "Comments", "File Name", "Delete"]
         for col_header, header in zip(col_headers, headers):
-            col_header.write(header)
+            col_header.markdown(f'<h5 style="color: #4F8BF9;"><strong>{header}</strong></h5></div>', unsafe_allow_html=True)
+            # col_header.write(header)
 
         # Iterate over the DataFrame to display the table with buttons
         for i, row in df.iterrows():
@@ -156,7 +106,7 @@ def populate_references_table():
                         'S.No': key + 1,
                         'Name': reference["name"],
                         'Comments': reference["comments"],
-                        'File Name': 'test file',
+                        'File Name': reference["file_name"],
                         'id': reference["id"]
                     }
             modified_references.append(item)
@@ -182,36 +132,28 @@ def delete_reference(reference_id):
     else:
         print(f"Failed to delete reference record. Status code: {response.status_code}")
 
-def add_reference(name, comments, file_url):
+def add_reference(name, comments, file_bytes):
     reference_data = {
         'name': name,
         'comments': comments,
         'user_id': st.session_state.user_id
     }
-    print("reference_data=", reference_data)
-    add_references_function(reference_data, file_url)
+    add_references_function(reference_data, file_bytes)
 
-def add_references_function(json_data, file_url):
+def add_references_function(json_data, file_bytes):
     create_ref_url = HOST_NAME + "/quick-score/context"
     
     # with open(file_url, 'rb') as pdf_file:
     multipart_data = MultipartEncoder(
         fields = {
-            'file': ('answerkey.pdf', open(file_url, 'rb'), 'application/pdf'),
+            'file': (file_bytes.name, file_bytes, 'application/pdf'),
             'context': json.dumps(json_data)
         }
     )   
     headers = {'Content-Type': multipart_data.content_type}  
     
     with st.spinner("Uploading reference details..."):
-        st.write("Searching for data...")
-        time.sleep(2)
-        st.write("Found URL.")
-        time.sleep(1)
-        st.write("Processing data...")
-        time.sleep(1)
         response = requests.post(create_ref_url, data=multipart_data.to_string(), headers=headers)
-        st.spinner("Document received.")
 
     if response.status_code == 200:
         st.success("Reference added successfully.")
