@@ -37,6 +37,8 @@ class AnswerDao:
         except Exception as error:
             print(error)
             raise DatabaseError("DB operation Failed: Get_Answer_By_Id")
+        finally:
+            self.db.close()
         return result
 
     def get_answers_by_exam_id(self, exam_id: str):
@@ -47,6 +49,8 @@ class AnswerDao:
         except Exception as error:
             print(error)
             raise DatabaseError("DB operation Failed: Get_Answers_By_User_Id")
+        finally:
+            self.db.close()
         return results
 
 
@@ -60,4 +64,6 @@ class AnswerDao:
         except Exception as error:
             print(error)
             raise DatabaseError("DB operation Failed: Delete_Answer")
+        finally:
+            self.db.close()
         return True
