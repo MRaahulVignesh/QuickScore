@@ -5,9 +5,10 @@ import redirect as rd
 
 def render_page(data):
     documents = build_documents(data)
-    print(st.session_state.carousel_index)
+
     # App title
     mark_down = """ 
+                <hr>
                 <h3 style='text-align: center;'>💬 Chat <p style="text-align: center; color: #f8bc64;"> powered by Cohere Coral</p></h3>
                 
                 """
