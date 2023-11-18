@@ -46,7 +46,7 @@ def render_side_bar():
         st.markdown("""
             <div style="text-align: center;">
                 <img class="profile-img" src="https://i.ibb.co/jrpb6Xd/profile1.png" alt="Profile icon">
-                <p class="welcome-msg">Welcome Author</p>
+                <p class="welcome-msg">Welcome Raahul</p>
             </div>
             """, unsafe_allow_html=True)
         

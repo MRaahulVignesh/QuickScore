@@ -43,7 +43,7 @@ def create_references():
                 submitted = st.form_submit_button('Submit')
                 if submitted:
                     # Call the function to add a reference with name, comments, and file name
-                    add_reference(name, comments, upload_file)
+                    add_reference(name, comments, uploaded_file)
                     # Hide the overlay
                     st.session_state.show_overlay = False
                     # Clear the session state keys if needed
@@ -153,14 +153,7 @@ def add_references_function(json_data, file_bytes):
     headers = {'Content-Type': multipart_data.content_type}  
     
     with st.spinner("Uploading reference details..."):
-        st.write("Searching for data...")
-        time.sleep(2)
-        st.write("Found URL.")
-        time.sleep(1)
-        st.write("Processing data...")
-        time.sleep(1)
         response = requests.post(create_ref_url, data=multipart_data.to_string(), headers=headers)
-        st.spinner("Document received.")
 
     if response.status_code == 200:
         st.success("Reference added successfully.")
