@@ -59,7 +59,7 @@ def create_homepage():
     with st.container():
         st.title("Grade and Respond")
         st.write(" Efficiently grade and provide feedback on student answer papers")
-        if custom_button("Login", on_click=rd.go_to_exams, key="custom_login"):
+        if custom_button("Login", on_click=rd.go_to_login, key="custom_login"):
             pass
         
         st.write("---")
