@@ -10,3 +10,6 @@ def go_to_evaluations():
 
 def go_to_login():
     st.session_state['page'] = 'login'
+
+def go_to_references():
+    st.session_state['page'] = 'references'
