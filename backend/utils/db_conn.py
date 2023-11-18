@@ -22,9 +22,10 @@ class PostgresConn:
         host: str = "localhost",
         port=5432,
     ):
-        username = credentials["username"]
-        password = credentials["password"]
-        self.__db_url = f"postgresql://{username}:{password}@{host}:{port}/{db_name}"
+        # username = credentials["username"]
+        # password = credentials["password"]
+        # self.__db_url = f"postgresql://{username}:{password}@{host}:{port}/{db_name}"
+        self.__db_url = f"sqlite:///mydatabase.db"
 
     def setup_server(self):
         engine = create_engine(self.__db_url, connect_args={}, future=True)

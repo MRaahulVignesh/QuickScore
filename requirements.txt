@@ -11,3 +11,6 @@ google-auth-httplib2
 google-auth-oauthlib
 cohere
 pdfplumber
+python-multipart
+weaviate-client
+langchain

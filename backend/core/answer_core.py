@@ -74,7 +74,7 @@ class AnswerCore:
         # inserting the result
         answer_result = self.answer_dao.create_answer(exam_id=input.exam_id, student_id=input.student_id, score=score, confidence=confidence, evaluation_details=evaluation_result, filename=filename)
         answer, student = self.__extract_answer_and_student(answer_result)
-        tmp = self.__create_answer_response(answer, student, exam_details)
+        tmp = self.__create_answer_response(answer, student)
         # answer = AnswerResponse.model_validate(tmp).model_dump(mode="json")
         return tmp
 
