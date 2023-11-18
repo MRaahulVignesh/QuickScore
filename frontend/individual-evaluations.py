@@ -21,6 +21,11 @@ with st.sidebar:
 carousel_items = []
 
 def get_evaluation_details(_id):
+    try: 
+        print(st.session_state["evaluation_details"])
+        return st.session_state["evaluation_details"]
+    except:
+        pass
 
     # The URL for the API endpoint
     url = HOST_NAME + "/quick-score/answers/"+str(_id)
@@ -36,7 +41,6 @@ def get_evaluation_details(_id):
         answer_result = response.json()
         return answer_result
     else:
-        print("Error in getting the exam details for the user, ", user_id)
         exam_result = []
         
 
@@ -56,6 +60,7 @@ def get_evaluation_details(_id):
     #         modified_exams.append(item)
     #     st.session_state.exam_details = modified_exams
 evaluation_data = get_evaluation_details(3)
+st.session_state["evaluation_data"] = evaluation_data
 carousel_items = evaluation_data["evaluation_details"]
 student_name = evaluation_data["student_name"]
 student_roll = evaluation_data["student_roll_no"]
@@ -75,7 +80,7 @@ def display_info(data):
     </style>
     <style>
         .scrollable-container {{
-            height: 325px; /* Fixed height */
+            height: 210px; /* Fixed height */
             overflow-y: scroll; /* Make it scrollable */
             border: 1px solid #ccc; /* Optional border */
             padding: 10px;
@@ -89,8 +94,6 @@ def display_info(data):
             <p style="color: #000;">{data["question"]}</p>
             <h6 style="color: #4F8BF9;">Student Answer</h2>
             <p style="color: #000;">{data["student_answer"]}</p>
-            <h6 style="color: #4F8BF9;">Justification</h2>
-            <p style="color: #000;">{data["justification"]}</p>
         </div>
     </div>
     """
@@ -115,7 +118,7 @@ col1, col2, col3 = st.columns([2, 10, 2])
 # Previous Button
 with col1:
     prev_button = st.button("Previous", on_click=prev_item)
-    st.write("\n\n\n\n\n\n\n\n\n\n\n\n")
+    st.write("\n")
     markdown_template1 = f"""
         <div style="font-family: sans-serif;  padding: 10px; border-radius: 10px; border: 1px solid #cccccc; margin: 10px 0;">
             <h6 style="color: #f8bc64; font-size: 16px;">Student Details</h6>
@@ -143,7 +146,7 @@ with col3:
     next_button = st.button("Next    ", on_click=next_item)
     score = carousel_items[st.session_state.carousel_index]["marks"]
     total_question_marks = 5
-    st.write("\n\n\n\n\n\n\n\n\n\n\n\n")
+    st.write("\n")
     markdown_template1 = f"""
         <div style="font-family: sans-serif;  padding: 10px; border-radius: 10px; border: 1px solid #cccccc; margin: 10px 0;">
             <h6 style="color: #f8bc64; font-size: 16px;">Scoring</h6>
@@ -161,5 +164,5 @@ with col3:
     st.markdown(markdown_template1, unsafe_allow_html=True)
     
 
-chat.render_page()
+chat.render_page(evaluation_data)
     
