@@ -1,7 +1,6 @@
-import jwt
 import datetime
 
-from backend.utils.errors import NotFoundError, AuthenticationError
+from backend.utils.errors import BadRequestError, InternalServerError, NotFoundError, AuthenticationError
 from backend.dao.answer_dao import AnswerDao
 from backend.dao.exam_dao import ExamDao
 from backend.schemas.answer_schema import AnswerResponse, CreateAnswer, AnswerIndividualResponse
@@ -75,7 +74,7 @@ class AnswerCore:
         # inserting the result
         answer_result = self.answer_dao.create_answer(exam_id=input.exam_id, student_id=input.student_id, score=score, confidence=confidence, evaluation_details=evaluation_result, filename=filename)
         answer, student = self.__extract_answer_and_student(answer_result)
-        tmp = self.__create_answer_response(answer, student, exam)
+        tmp = self.__create_answer_response(answer, student, exam_details)
         # answer = AnswerResponse.model_validate(tmp).model_dump(mode="json")
         return tmp
 
