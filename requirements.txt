@@ -15,6 +15,6 @@ python-multipart
 weaviate-client
 langchain
 streamlit
-request
+requests
 requests_toolbelt
 pypdf 
