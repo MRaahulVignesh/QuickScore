@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.concurrency import asynccontextmanager
-from backend.utils.db_conn import postgres_conn
+from backend.utils.db_conn import conn
 from backend.routes.user_router import user_router
 from backend.routes.exam_router import exam_router
 from backend.routes.student_router import student_router
@@ -9,11 +9,11 @@ from backend.routes.context_router import context_router
 
 def authorization_service_startup():
     print("Starting up -- Authorization server!!")
-    postgres_conn.setup_server()
+    conn.setup_server()
 
 def authorization_service_shutdown():
     print("Shutting down -- Authorization server!!")
-    postgres_conn.close_all_connections()
+    conn.close_all_connections()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
