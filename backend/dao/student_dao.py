@@ -1,13 +1,13 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import exc
 
-from backend.utils.db_conn import postgres_conn  
+from backend.utils.db_conn import conn  
 from backend.utils.errors import DatabaseError, DuplicateError, NotFoundError
 from backend.models.models import StudentModel, AnswerModel
 
 class StudentDao:
     def __init__(self):
-        self.db = postgres_conn.get_db()
+        self.db = conn.get_db()
 
     # Create a new user
     def create_student(self, name: str, roll_no: str, email: str, user_id: int):

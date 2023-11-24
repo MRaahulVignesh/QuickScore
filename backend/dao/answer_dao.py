@@ -1,13 +1,13 @@
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy import exc
 
-from backend.utils.db_conn import postgres_conn  
+from backend.utils.db_conn import conn  
 from backend.utils.errors import DatabaseError, DuplicateError, NotFoundError
 from backend.models.models import AnswerModel, StudentModel
 
 class AnswerDao:
     def __init__(self):
-        self.db = postgres_conn.get_db()
+        self.db = conn.get_db()
 
     def create_answer(self, student_id: int, exam_id: int, score: float, confidence: float, filename: str, evaluation_details):
         try:

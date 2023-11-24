@@ -1,9 +1,9 @@
 import streamlit as st
-import redirect as rd
+import frontend.redirect as rd
 import pandas as pd
-from datetime import datetime
 import requests
-from side_bar import render_side_bar
+from frontend.side_bar import render_side_bar
+from backend.core.student_core import StudentCore
 
 if 'student_details' not in st.session_state:
     st.session_state.student_details = []
@@ -73,28 +73,21 @@ def create_students():
                 st.experimental_rerun()
                 
 def populate_students_table():
+    
+    user_id = st.session_state.user_id
 
-    # The URL for the API endpoint
-    students_get_url = HOST_NAME + "/quick-score/students"
-    query_params = {
-        'user_id': st.session_state.user_id
-    }
-    headers = {'Content-Type': 'application/json'}
     try:
-        response = requests.get(students_get_url, params=query_params, headers=headers)
-        if response.status_code == 200:
-            student_result = response.json()
-        else:
-            st.error(f"Error: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        st.error(f"Request failed: {e}")
+        student_core = StudentCore()
+        student_result = student_core.get_students_by_user_id(user_id)
+    except Exception as error:
+        print(error)
+        st.error("Cannot Populate the student details!")
         student_result = []
         
 
     modified_students = []
     if len(student_result) > 0:
         for key, student in enumerate(student_result):
-            print(student)
             item = {
                         'S.No': key + 1,
                         'Name': student["name"],
@@ -107,47 +100,29 @@ def populate_students_table():
     
 def delete_student(student_id):
 
-    # The URL for the API endpoint
-    student_delete_url = HOST_NAME + "/quick-score/students/" + str(student_id) 
-
-    # Set the appropriate headers for JSON - this is important!
-    headers = {'Content-Type': 'application/json'}
-
-    # Send the POST request
-    response = requests.delete(student_delete_url, headers=headers)
-    print(response)
-    # Check if the request was successful
-    if response.status_code == 200:
-        st.session_state.student_details = [
-            student for student in st.session_state.student_details if student['student_id'] != student_id
-        ]
-        st.experimental_rerun()
-    else:
-        print(f"Failed to delete student record. Status code: {response.status_code}")
+    try:
+        student_core = StudentCore()
+        student_result = student_core.delete_student(student_id)
+    except Exception as error:
+        print(error)
+        st.error("Cannot delete the student record!")
+    st.experimental_rerun()
         
 
 def add_student(name, email, roll_number):
-    # The URL for the API endpoint to add a student
-    student_add_url = HOST_NAME + "/quick-score/students" 
-
-    # The data you want to send with the POST request
+    
     student_data = {
         'name': name,
         'email': email,
         'roll_no': roll_number,
         'user_id': st.session_state.user_id
     }
-
-    # Set the appropriate headers for JSON
-    headers = {'Content-Type': 'application/json'}
-
-    # Send the POST request
-    response = requests.post(student_add_url, json=student_data, headers=headers)
-
-    # Check if the request was successful
-    if response.status_code == 200:
-        st.success("Student added successfully.")
-        # Optionally, rerun to refresh the data
-        st.experimental_rerun()
-    else:
-        st.error(f"Failed to add student. Status code: {response.status_code}")
+    
+    try:
+        student_core = StudentCore()
+        student_core.create_student(student_data)
+    except Exception as error:
+        print(error)
+        st.error(f"Failed to add student")
+    st.experimental_rerun()
+        

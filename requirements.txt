@@ -14,3 +14,7 @@ pdfplumber
 python-multipart
 weaviate-client
 langchain
+streamlit
+request
+requests_toolbelt
+pypdf 

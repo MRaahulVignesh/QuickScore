@@ -16,14 +16,14 @@ class AnswerCore:
     
 
     def create_answer(self, input: CreateAnswer, answer_pdf, filename):
-        
         # send the json_answer_pdf and json_answer_key to the model
+        print("1")
         exam_context_details = self.exam_dao.get_exam_by_id(input.exam_id)
         if exam_context_details[0] is not None:
             exam_details = exam_context_details[0].__dict__
         else:
             raise InternalServerError("Provided Exam Details not Present")
-        
+        print("2")
         if exam_context_details[1] is not None:
             context_details = exam_context_details[1].__dict__
             context_key = context_details["context_key"]
@@ -41,7 +41,7 @@ class AnswerCore:
         sorted_student_answer = self.__sort_json_by_no(json_answer_pdf)
         sorted_answer_key = self.__sort_json_by_no(json_answer_key)
 
-        
+        print("3")
         # #list json
         j,k=0,0
         json_answer_list = []
@@ -75,7 +75,9 @@ class AnswerCore:
         answer_result = self.answer_dao.create_answer(exam_id=input.exam_id, student_id=input.student_id, score=score, confidence=confidence, evaluation_details=evaluation_result, filename=filename)
         answer, student = self.__extract_answer_and_student(answer_result)
         tmp = self.__create_answer_response(answer, student)
+        print("4")
         # answer = AnswerResponse.model_validate(tmp).model_dump(mode="json")
+        
         return tmp
 
     def get_answer_by_id(self, id: int):

@@ -1,19 +1,11 @@
 import streamlit as st
-import redirect as rd
+import frontend.redirect as rd
 import pandas as pd
-from datetime import datetime
-import requests
-import json
-from side_bar import render_side_bar
-import time
-from requests_toolbelt.multipart.encoder import MultipartEncoder
+from frontend.side_bar import render_side_bar
+from backend.core.context_core import ContextCore
+import tempfile
+from langchain.document_loaders import PyPDFLoader
 
-if 'reference_details' not in st.session_state:
-    st.session_state.reference_details = []
-if 'show_overlay' not in st.session_state:
-    st.session_state.show_overlay = False
-
-HOST_NAME = "http://localhost:8000"
 
 def create_references():
     populate_references_table()
@@ -25,12 +17,11 @@ def create_references():
     if 'reference_details' not in st.session_state:
         st.session_state.reference_details = []
 
-    # Overlay toggle
-    if 'show_overlay' not in st.session_state:
-        st.session_state.show_overlay = False
+    if 'is_expanded' not in st.session_state:
+        st.session_state['is_expanded'] = False
 
     # The overlay layout
-    with st.expander("Upload Reference Details"):
+    with st.expander("Upload Reference Details", expanded=st.session_state['is_expanded']):
         with st.container():
             with st.form(key='reference_details_form'):
                 
@@ -44,12 +35,7 @@ def create_references():
                 if submitted:
                     # Call the function to add a reference with name, comments, and file name
                     add_reference(name, comments, uploaded_file)
-                    # Hide the overlay
-                    st.session_state.show_overlay = False
-                    # Clear the session state keys if needed
-                    st.session_state.pop('name', None)
-                    st.session_state.pop('comments', None)
-                    st.session_state.pop('file_uploader', None)
+                    st.session_state['is_expanded'] = False
                     st.experimental_rerun()
 
     # Display the table of reference details with 'View', 'Edit', and 'Delete' buttons
@@ -78,25 +64,13 @@ def create_references():
                 delete_reference(reference_id)
                 st.experimental_rerun()
 
-
-
 def populate_references_table():
-
-    # The URL for the API endpoint
-    references_get_url = HOST_NAME + "/quick-score/context"
-    query_params = {
-        'user_id': st.session_state.user_id
-    }
-    headers = {'Content-Type': 'application/json'}
+    user_id = st.session_state["user_id"]
+    reference_core = ContextCore()
     try:
-        response = requests.get(references_get_url, params=query_params, headers=headers)
-        if response.status_code == 200:
-            reference_result = response.json()
-        else:
-            st.error(f"Error: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        st.error(f"Request failed: {e}")
-        reference_result = []
+        reference_result = reference_core.get_contexts_by_user_id(user_id)
+    except Exception as error:
+        st.error("Could not populate references!")
         
     modified_references = []
     if len(reference_result) > 0:
@@ -110,54 +84,53 @@ def populate_references_table():
                         'id': reference["id"]
                     }
             modified_references.append(item)
-        st.session_state.reference_details = modified_references
+        st.session_state.reference_details = modified_references 
+
     
 def delete_reference(reference_id):
-
-    # The URL for the API endpoint
-    reference_delete_url = HOST_NAME + "/quick-score/context/" + str(reference_id) 
-
-    # Set the appropriate headers for JSON - this is important!
-    headers = {'Content-Type': 'application/json'}
-
-    # Send the POST request
-    response = requests.delete(reference_delete_url, headers=headers)
-    print(response)
-    # Check if the request was successful
-    if response.status_code == 200:
-        st.session_state.reference_details = [
+    reference_core = ContextCore()
+    try:
+        reference_core.delete_context(reference_id)
+    except Exception as error:
+        st.error("Delete Operation Failed")
+    st.session_state.reference_details = [
             reference for reference in st.session_state.reference_details if reference['id'] != reference_id
         ]
-        st.experimental_rerun()
-    else:
-        print(f"Failed to delete reference record. Status code: {response.status_code}")
+    st.experimental_rerun()
 
-def add_reference(name, comments, file_bytes):
+
+def add_reference(name, comments, uploaded_file):
+    user_id = st.session_state["user_id"]
     reference_data = {
         'name': name,
         'comments': comments,
-        'user_id': st.session_state.user_id
+        'user_id': user_id
     }
-    add_references_function(reference_data, file_bytes)
+    add_references_function(reference_data, uploaded_file)
 
-def add_references_function(json_data, file_bytes):
-    create_ref_url = HOST_NAME + "/quick-score/context"
+def add_references_function(json_data, uploaded_file):
     
-    # with open(file_url, 'rb') as pdf_file:
-    multipart_data = MultipartEncoder(
-        fields = {
-            'file': (file_bytes.name, file_bytes, 'application/pdf'),
-            'context': json.dumps(json_data)
-        }
-    )   
-    headers = {'Content-Type': multipart_data.content_type}  
+    reference_core = ContextCore()
     
-    with st.spinner("Uploading reference details..."):
-        response = requests.post(create_ref_url, data=multipart_data.to_string(), headers=headers)
+    context_pdf = None
+        
+    with st.spinner("Uploading Reference details..."):
+        with tempfile.NamedTemporaryFile(delete=True) as temp_file:
 
-    if response.status_code == 200:
-        st.success("Reference added successfully.")
-        st.experimental_rerun()
-    else:
-        print("response json=", response.json())
-        st.error(f"Failed to add reference. Status code: {response.status_code}")
+            file_contents = uploaded_file.read()
+
+            temp_file.write(file_contents)
+            temp_file.flush()
+
+            temp_file_path = temp_file.name
+            
+            loader = PyPDFLoader(temp_file_path)
+            context_pdf = loader.load()
+        
+        try:
+            reference = reference_core.create_context(input=json_data, filename=uploaded_file.name, context_pdf=context_pdf)
+            st.success("Reference added successfully.")
+        except Exception as error:
+            print(error)
+            st.error("Failed to add reference.")
+        

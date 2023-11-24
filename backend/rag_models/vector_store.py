@@ -32,6 +32,7 @@ class VectorDB:
         self.embeddings = CohereEmbeddings(model = "embed-multilingual-v3.0",cohere_api_key=cohere_api_key)
 
     def embed_and_store(self, document, class_name):
+        print(document, class_name)
         # lets make sure its vectorizer is what the one we want
         class_definition = {
             "class": class_name, #should be obtainable from the doc_path

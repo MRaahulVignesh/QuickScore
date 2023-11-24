@@ -1,7 +1,8 @@
 import streamlit as st
 import hashlib
-import redirect as rd
-from exams import  create_exams
+import frontend.redirect as rd
+from frontend.exams import  create_exams
+from backend.core.user_core import UserCore
 import requests
 
 # Function to hash passwords
@@ -29,6 +30,7 @@ hashed_password = hashlib.sha256(plain_text_password.encode()).hexdigest()
 
 def is_logged_in():
     return st.session_state.get('logged_in', False)
+
 # Page Functions
 def login_page():
 
@@ -41,15 +43,18 @@ def login_page():
     email = st.text_input("Email")
     password = st.text_input("Password", type='password')
     if st.button("Login", key='login'):
-        login_result = perform_backend_login(email, password)
-        
-        if login_result is not None:
-            st.session_state.user_id = login_result["user_id"]
-            print("st.session_state.user_id=", st.session_state.user_id)
-            st.session_state['logged_in'] = True  # Set login state
-            st.session_state['username'] = 'Editor'  # Store user name
-            st.experimental_rerun()
-
+        try:
+            user_core = UserCore()
+            login_result = user_core.authenticate_user(email, password)
+            if login_result is not None:
+                st.session_state['user_id'] = login_result['user_id']
+                st.session_state['username'] = login_result['name']
+                st.session_state['logged_in'] = True
+                st.experimental_rerun()
+        except Exception as error:
+            print(error)
+            st.error("Login Error!!")
+            
         # hashed_password = make_hashes(password)
         found_user = user_data.get(email, False)
         if found_user and check_hashes(password, found_user[1]):
@@ -70,7 +75,9 @@ def signup_page():
     new_password = st.text_input("Enter Password", type='password', key='new_password')
     
     if st.button("Create Account"):
-        signup_result = perform_backend_create_user(new_name, new_email, new_password)
+        user_core = UserCore()
+        signup_result = user_core.create_user(new_name, new_email, new_password)
+        # signup_result = perform_backend_create_user(new_name, new_email, new_password)
 
         if signup_result is not None:
             st.success("Account Created Successfully. Please go back to Login.")
@@ -80,6 +87,7 @@ def signup_page():
         st.session_state['page'] = 'login'
 
 def perform_backend_login(email, password):
+    
     url = "http://localhost:8000/quick-score/users/login"
     data = {'email': email, 'password': password}
 
@@ -89,6 +97,7 @@ def perform_backend_login(email, password):
     else:
         st.error(f"Error login: {response.status_code}")
         return None
+    
 def perform_backend_create_user(name, email, password):
     url = "http://localhost:8000/quick-score/users"
     data = {'email': email, 'password': password, 'name': name}

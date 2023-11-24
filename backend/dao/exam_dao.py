@@ -1,22 +1,28 @@
-import datetime
+
 from sqlalchemy.orm import Session, aliased
 from sqlalchemy import exc, and_
 
-from backend.utils.db_conn import postgres_conn  
+from backend.utils.db_conn import conn  
 from backend.utils.errors import DatabaseError, DuplicateError, NotFoundError
 from backend.models.models import ExamModel, AnswerModel, ContextModel
+from datetime import datetime
 
 class ExamDao:
     def __init__(self):
-        self.db = postgres_conn.get_db()
+        self.db = conn.get_db()
 
     # Create a new user
     def create_exam(self, name: str, conducted_date: datetime, description: str, total_marks: float, user_id: int, context_id: int, filename: str, answer_key):
         try:
+            print(name, conducted_date, description, total_marks, user_id, context_id, answer_key, filename)
+            print(type(name), type(conducted_date), type(description), type(total_marks), type(user_id), type(context_id), type(answer_key), type(filename))
+            datetime_object = datetime.strptime(conducted_date, "%Y-%m-%d")
+            cond_date = datetime_object.date()
+            
             if answer_key is not None:
-                exam = ExamModel(name=name, conducted_date=conducted_date, description=description, total_marks=total_marks, user_id=user_id, context_id=context_id, answer_key=answer_key, file_name=filename)
+                exam = ExamModel(name=name, conducted_date=cond_date, description=description, total_marks=total_marks, user_id=user_id, context_id=context_id, answer_key=answer_key, file_name=filename)
             else:
-                exam = ExamModel(name=name, conducted_date=conducted_date, description=description, total_marks=total_marks, user_id=user_id, context_id=context_id, file_name=file_name)                
+                exam = ExamModel(name=name, conducted_date=cond_date, description=description, total_marks=total_marks, user_id=user_id, context_id=context_id, file_name=filename)                
             self.db.add(exam)
             self.db.commit()
             self.db.refresh(exam)
@@ -28,7 +34,6 @@ class ExamDao:
             raise DatabaseError("DB operation Failed: Create_Exam")
         finally:
             self.db.close()
-        print(exam)
         return exam
 
     # Retrieve a user by ID

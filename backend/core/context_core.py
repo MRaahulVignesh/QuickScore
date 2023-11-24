@@ -14,15 +14,17 @@ class ContextCore:
 
     # Create a new context
     def create_context(self, input: CreateContext, filename, context_pdf = None):
+        print(input, filename, context_pdf)
         if context_pdf is None:
             raise BadRequestError("Could not parse the pdf")
         uuid_str = str(uuid.uuid4()).replace('-', '')
         context_unique_key = "CONTEXT"+uuid_str[0].upper() + uuid_str[1:]
-
+        print(context_unique_key)
         vector_db = VectorDB()
         result = vector_db.embed_and_store(context_pdf, context_unique_key)
+        print(result)
         if result:
-            context = self.context_dao.create_context(name= input.name, comments=input.comments, context_key=context_unique_key, user_id=input.user_id, filename=filename)
+            context = self.context_dao.create_context(name= input["name"], comments=input["comments"], context_key=context_unique_key, user_id=input["user_id"], filename=filename)
             context = ContextResponse.model_validate(context).model_dump(mode="json")
         else:
             raise ModelError("Could Process the context pdf!")

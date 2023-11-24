@@ -1,13 +1,13 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import exc
 
-from backend.utils.db_conn import postgres_conn  
+from backend.utils.db_conn import conn  
 from backend.utils.errors import DatabaseError, DuplicateError, NotFoundError
 from backend.models.models import UserModel
 
 class UserDao:
     def __init__(self):
-        self.db = postgres_conn.get_db()
+        self.db = conn.get_db()
 
     # Create a new user
     def create_user(self, name: str, email: str, password: str):

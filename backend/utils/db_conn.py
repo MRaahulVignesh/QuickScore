@@ -8,25 +8,16 @@ from backend.utils.errors import InternalServerError, DatabaseError
 
 Base = declarative_base()
 
-class PostgresConn:
+class DBConn:
 
     _instance = None
     __db_url: str
     session_local: sessionmaker
     engine = None
 
-    def __init__(
-        self,
-        db_name: str,
-        credentials: dict,
-        host: str = "localhost",
-        port=5432,
-    ):
-        # username = credentials["username"]
-        # password = credentials["password"]
-        # self.__db_url = f"postgresql://{username}:{password}@{host}:{port}/{db_name}"
-        self.__db_url = f"sqlite:///mydatabase.db"
-
+    def __init__(self,):
+        self.__db_url = "sqlite:///mydatabase.db"
+        
     def setup_server(self):
         engine = create_engine(self.__db_url, connect_args={}, future=True)
         self.engine = engine
@@ -59,10 +50,5 @@ class PostgresConn:
         if self.engine is not None:
             self.engine.dispose()
 
-db_credentials = {"username": config.DB_USERNAME, "password": config.DB_PASSWORD}
-postgres_conn = PostgresConn(
-    db_name=config.DB_DATABASE,
-    host=config.DB_HOST,
-    port=config.DB_PORT,
-    credentials=db_credentials,
-)
+conn = DBConn()
+conn.setup_server()

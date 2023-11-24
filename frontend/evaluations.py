@@ -1,28 +1,31 @@
+from backend.core.student_core import StudentCore
 import streamlit as st
-import redirect as rd
+import frontend.redirect as rd
 import pandas as pd
-from datetime import datetime
 import requests
-import json
-import time
-from requests_toolbelt.multipart.encoder import MultipartEncoder
-from side_bar import render_side_bar
+import io
+
+from frontend.side_bar import render_side_bar
+from backend.core.answer_core import AnswerCore
+from backend.core.answer_core import AnswerCore
+import pdfplumber
 
 HOST_NAME = "http://localhost:8000"
 STUDENTS_LIST = ["No students to display"] 
 
-if 'evaluation_details' not in st.session_state:
-    st.session_state.evaluation_details = []
 
-if 'show_overlay' not in st.session_state:
-    st.session_state.show_overlay = False
 
 def create_evaluations():
     st.session_state.evaluation_details = populate_evaluation_table()
     render_side_bar()
     
-
     st.title("Evaluations")
+    
+    if 'evaluation_details' not in st.session_state:
+        st.session_state.evaluation_details = []
+
+    if 'show_overlay' not in st.session_state:
+        st.session_state.show_overlay = False
 
     with st.expander("Upload Evaluation Details"):
         student_dict = get_student_details()
@@ -45,14 +48,6 @@ def create_evaluations():
                         'student_id': student_dict[selected_student]
                     }
                     add_evaluation(json_data, uploaded_file)
-                    # st.session_state.evaluation_details.append({
-                    #     # 'Serial No': serial_no,
-                    #     'Student Name': student_name,
-                    #     'Roll No': 1,
-                    #     'Score': 100,
-                    #     'Status': "in progress",
-                    #     'File Name': uploaded_file.name
-                    # })
                     st.session_state.show_overlay = False
                     st.experimental_rerun()
         
@@ -89,23 +84,14 @@ def create_evaluations():
                 remove_evaluation(row['id'])
                 del st.session_state.evaluation_details[i]
                 st.experimental_rerun()
-
-
+                
 def populate_evaluation_table():
-    answers_get_url = HOST_NAME + "/quick-score/answers"
-    query_params = {
-        'exam_id': st.session_state.exam_id
-    }
-    headers = {'Content-Type': 'application/json'}
-    try:
-        response = requests.get(answers_get_url, params=query_params, headers=headers)
-        if response.status_code == 200:
-            answer_result = response.json()
-        else:
-            st.error(f"Error: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        st.error(f"Request failed: {e}")
-
+    
+    exam_id = st.session_state.exam_id
+    
+    answer_core = AnswerCore()
+    answer_result = answer_core.get_answers_by_exam_id(exam_id)
+    
     modified_answers = []
     if len(answer_result) > 0:
         print("answer_result inside pop= ", answer_result)
@@ -126,73 +112,48 @@ def populate_evaluation_table():
 
 #retrieve student details
 def get_student_details():
-    students_get_url = HOST_NAME + "/quick-score/students"
-    query_params = {
-        'user_id': st.session_state.user_id
-    }
-    headers = {'Content-Type': 'application/json'}
+    user_id = st.session_state.user_id
+    student_core = StudentCore()
     try:
-        response = requests.get(students_get_url, params=query_params, headers=headers)
-        if response.status_code == 200:
-            
-            student_result = response.json()
-            
-            # student_result = json.loads(student_result)
-            print("student_result inside get sd= ", student_result)
-            student_dictionary = {}
-            for student in student_result:
-                print("type of student", type(student))
-                key = f"{student['name']} ({student['roll_no']})"
-                value = student['id']
-                student_dictionary[key] = value
-            return student_dictionary
-        else:
-            st.error(f"Error: {response.status_code}")
-    except requests.exceptions.RequestException as e:
-        st.error(f"Request failed: {e}")
+        student_result = student_core.get_students_by_user_id(user_id=user_id)
+    except Exception as error:
+        st.error("Could not reterieve the student details")
+        
+    student_dictionary = {}
+    for student in student_result:
+        key = f"{student['name']} ({student['roll_no']})"
+        value = student['id']
+        student_dictionary[key] = value
+    return student_dictionary
 
 def remove_evaluation(delete_id):
-     # The URL for the API endpoint
-    exams_get_url = HOST_NAME + "/quick-score/answers/" + str(delete_id)
-
-    # Set the appropriate headers for JSON - this is important!
-    headers = {'Content-Type': 'application/json'}
-
-    # Send the POST request
-    response = requests.delete(exams_get_url, headers=headers)
-    print(response)
-    # Check if the request was successful
-    if response.status_code == 200:
+    answer_core = AnswerCore()
+    try:
+        answer_core.delete_answer(delete_id)
+        st.sucess("Successfully removed the evaluation!!")
         st.experimental_rerun()
-    else:
-        print("Delete operation failed")
-    st.session_state.evaluation_details = populate_evaluation_table()
-
-
+    except Exception as error:
+        print(error)
+        st.error("Cannot remove evaluation!!")
+    
 
 def add_evaluation(json_data, file_upload):
-    create_evaluation_url = HOST_NAME + "/quick-score/answers"
-    
-    # with open(file_url, 'rb') as pdf_file:
-    multipart_data = MultipartEncoder(
-        fields = {
-            'file': (file_upload.name, file_upload.getvalue(), 'application/pdf'),
-            'answer_data': json.dumps(json_data)
-        }
-    )   
-    headers = {'Content-Type': multipart_data.content_type}  
+    filename = file_upload.name
+    answer_core = AnswerCore()
+
+    pdf_data = file_upload.read()
+
+    with pdfplumber.open(io.BytesIO(pdf_data)) as pdf:
+        answer_pdf = ""
+        for page in pdf.pages:
+            answer_pdf += page.extract_text()
+            
     with st.spinner("Uploading evaluation details..."):
-        response = requests.post(create_evaluation_url, data=multipart_data.to_string(), headers=headers)
-        
-    if response.status_code == 200:
+        answer_core.create_answer(input=json_data, answer_pdf=pdf_data, filename=filename)
         st.success("answer added successfully.")
-        # Optionally, rerun to refresh the data
         st.experimental_rerun()
-    else:
-        # print("response json=", response.json())
-        st.error(f"Failed to add answer. Status code: {response.status_code}")
+        
         
 def view_evaluation(_id):
-    print("hello")
     st.session_state.evaluation_id = _id
     rd.go_to_individual_evaluation()

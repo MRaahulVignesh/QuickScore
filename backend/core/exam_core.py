@@ -17,9 +17,10 @@ class ExamCore:
     def create_exam(self, input: ExamResponse, filename:str, answer_key: str = ""):
         if answer_key == "":
             raise BadRequestError("Could not parse the pdf")
+
         qs = QuestionSplitter()
         json_answer_key = qs.splitter(answer_key)
-        exam = self.exam_dao.create_exam(name= input.name, conducted_date=input.conducted_date, description=input.description, total_marks=input.total_marks, user_id=input.user_id, answer_key=json_answer_key, context_id=input.context_id, filename=filename)
+        exam = self.exam_dao.create_exam(name= input["name"], conducted_date=input["conducted_date"], description=input["description"], total_marks=input["total_marks"], user_id=input["user_id"], answer_key=json_answer_key, context_id=input["context_id"], filename=filename)
         exam = ExamResponse.model_validate(exam).model_dump(mode="json")
         return exam
 

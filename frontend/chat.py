@@ -1,6 +1,6 @@
 import streamlit as st
 import requests
-import redirect as rd
+import frontend.redirect as rd
 
 
 def render_page(data):

@@ -53,20 +53,10 @@ class UserCore:
         if actual_password != password:
             raise AuthenticationError("Error in email or password!")
         secret_key = config.SECRET_KEY
-        output = self.__create_jwt_token(user.id, email, secret_key)
-        return output     
-    
-    def __create_jwt_token(self,user_id, user_email, secret_key, expiration_minutes=30):
-        # Calculate the expiration time for the token
-        expiration = datetime.datetime.utcnow() + datetime.timedelta(minutes=expiration_minutes)
-        # Create the payload for the token
+        user = user.__dict__
         payload = {
-            "user_id": user_id,
-            "email": user_email,
-            "exp": expiration,
+            "user_id": user["id"],
+            "email": user["email"],
+            "name": user["name"]
         }
-        token = jwt.encode(payload, secret_key, algorithm="HS256")
-        output = {}
-        output["user_id"] = user_id
-        output["token"] = token
-        return output
+        return payload

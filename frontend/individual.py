@@ -1,11 +1,22 @@
 import streamlit as st
-import chat
+from frontend.chat import render_page
 import requests
-from side_bar import render_side_bar
+from frontend.side_bar import render_side_bar
+from backend.core.answer_core import AnswerCore
 
 HOST_NAME = "http://localhost:8000"
 
 def get_evaluation_details(_id):
+    
+    answer_core = AnswerCore()
+    answer_result = answer_core.get_answer_by_id(_id)
+    print(answer_result)
+    return answer_result
+    
+    
+    
+    
+    
 
     # The URL for the API endpoint
     url = HOST_NAME + "/quick-score/answers/"+str(_id)
@@ -22,23 +33,6 @@ def get_evaluation_details(_id):
         return answer_result
     else:
         exam_result = []
-        
-
-    # modified_exams = []
-    # if len(exam_result) > 0:
-    #     for key, exam in enumerate(exam_result):
-    #         print(exam)
-    #         item = {
-    #                     'id': exam["id"],
-    #                     'Serial No': key+1,
-    #                     'Name': exam["name"],
-    #                     'Date': exam["conducted_date"],
-    #                     'Total Score': exam["total_marks"],
-    #                     # Store uploaded file info or handle file processing here
-    #                     'Files': 'dummy file'
-    #                 }
-    #         modified_exams.append(item)
-    #     st.session_state.exam_details = modified_exams
 
 def display_info(data):
     markdown_template = f"""
@@ -150,5 +144,5 @@ def create_individual_evaluation_page():
         st.markdown(markdown_template1, unsafe_allow_html=True)
         
 
-    chat.render_page(evaluation_data)
+    render_page(evaluation_data)
     

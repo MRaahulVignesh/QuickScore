@@ -1,5 +1,5 @@
 import streamlit as st
-import redirect as rd
+import frontend.redirect as rd
 
 def render_side_bar():
     

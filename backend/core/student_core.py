@@ -13,7 +13,7 @@ class StudentCore:
 
     # Create a new student
     def create_student(self, input: CreateStudent):
-        student = self.student_dao.create_student(name= input.name, roll_no= input.roll_no, email= input.email, user_id=input.user_id)
+        student = self.student_dao.create_student(name= input["name"], roll_no= input["roll_no"], email= input["email"], user_id=input["user_id"])
         student = StudentResponse.model_validate(student).model_dump(mode="json")
         return student
 
