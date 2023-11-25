@@ -101,27 +101,26 @@ def create_homepage():
         )
 
 
-def main_logic():
-    # Main app logic
-    # login page deactivated for testing purposes
-    if st.session_state["page"] == "login":
-        login.login_page()
-    elif st.session_state["page"] == "signup":
-        login.signup_page()
+# Main app logic
+# login page deactivated for testing purposes
+if st.session_state["page"] == "login":
+    login.login_page()
+elif st.session_state["page"] == "signup":
+    login.signup_page()
 
-    if st.session_state["page"] == "home":
-        create_homepage()
-    elif st.session_state["page"] == "students":
-        create_students()
-    elif st.session_state["page"] == "exams":
-        create_exams()
-    elif st.session_state["page"] == "evaluations":
-        create_evaluations()
-    elif st.session_state["page"] == "references":
-        create_references()
-    elif st.session_state["page"] == "individual":
-        create_individual_evaluation_page()
 
+if st.session_state["page"] == "home":
+    create_homepage()
+elif st.session_state["page"] == "students":
+    create_students()
+elif st.session_state["page"] == "exams":
+    create_exams()
+elif st.session_state["page"] == "evaluations":
+    create_evaluations()
+elif st.session_state["page"] == "references":
+    create_references()
+elif st.session_state["page"] == "individual":
+    create_individual_evaluation_page()
 
 # Display image
 # local_image_path = "bg.png"

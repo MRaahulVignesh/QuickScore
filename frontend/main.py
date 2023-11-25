@@ -1,11 +1,11 @@
 import streamlit as st
-import redirect as rd
-from students import create_students
-from exams import create_exams
-from evaluations import create_evaluations
-from references import create_references
-from individual import create_individual_evaluation_page
-import login as login
+import frontend.redirect as rd
+from frontend.students import create_students
+from frontend.exams import create_exams
+from frontend.evaluations import create_evaluations
+from frontend.references import create_references
+from frontend.individual import create_individual_evaluation_page
+import frontend.login as login
 
 st.set_page_config(page_title="GradeMe", layout="wide")
 
